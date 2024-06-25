@@ -15,13 +15,10 @@
 
     // Function to block popups
     function blockPopups() {
-        window.open = function() {
-            console.log("Popup blocked!");
+        window.open = function(url, name, features) {
+            console.log("Popup blocked!", url);
             return null;
         };
-        document.addEventListener('click', function(event) {
-            event.preventDefault();
-        }, true);
     }
 
     blockPopups();
@@ -162,7 +159,7 @@
             headingText.textContent = 'Bing Chilling Media';
             headingText.style.fontSize = '30px';
             headingText.style.marginBottom = '20px';
-            headingText.style.color = '#00bcd4';
+            headingText.style.color = '#ffffff';
             promptBox.appendChild(headingText);
 
             const promptText = document.createElement('p');
@@ -308,6 +305,14 @@
             };
             promptBox.appendChild(confirmButton);
 
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.onclick = function() {
+                promptBox.remove();
+                document.getElementById('initial-prompt-box').classList.remove('hidden');
+            };
+            promptBox.appendChild(cancelButton);
+
             document.body.appendChild(promptBox);
 
             document.addEventListener('keydown', function(event) {
@@ -364,6 +369,14 @@
                 fetchEpisodes(tvId, seasonNumber);
             };
             promptBox.appendChild(confirmButton);
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.onclick = function() {
+                promptBox.remove();
+                document.getElementById('initial-prompt-box').classList.remove('hidden');
+            };
+            promptBox.appendChild(cancelButton);
 
             document.body.appendChild(promptBox);
 
@@ -424,6 +437,14 @@
             };
             promptBox.appendChild(confirmButton);
 
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.onclick = function() {
+                promptBox.remove();
+                document.getElementById('initial-prompt-box').classList.remove('hidden');
+            };
+            promptBox.appendChild(cancelButton);
+
             document.body.appendChild(promptBox);
 
             document.addEventListener('keydown', function(event) {
@@ -446,6 +467,11 @@
 
             videoContainer.appendChild(iframe);
             document.body.appendChild(videoContainer);
+
+            const footer = document.createElement('div');
+            footer.classList.add('footer');
+            footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT';
+            document.body.appendChild(footer);
         }
 
         window.onload = function() {
