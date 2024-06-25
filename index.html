@@ -13,73 +13,8 @@
     window.addEventListener('load', setVh);
     setVh();
 
-   // Overriding common popup methods
-(function() {
-    // Block window.open
-    window.open = function() {
-        console.log("Blocked window.open");
-        return null;
-    };
-
-    // Block new windows using form submissions
-    HTMLFormElement.prototype.submit = (function(originalSubmit) {
-        return function() {
-            if (this.target === '_blank') {
-                console.log("Blocked form target=_blank");
-                return null;
-            }
-            originalSubmit.call(this);
-        };
-    })(HTMLFormElement.prototype.submit);
-
-    // Block alert, confirm, and prompt
-    window.alert = function() {
-        console.log("Blocked alert");
-        return null;
-    };
-    window.confirm = function() {
-        console.log("Blocked confirm");
-        return null;
-    };
-    window.prompt = function() {
-        console.log("Blocked prompt");
-        return null;
-    };
-
-    // Block onclick popup attempts
-    document.addEventListener('click', function(e) {
-        let target = e.target;
-        while (target) {
-            if (target.tagName === 'A' && target.target === '_blank') {
-                console.log("Blocked link target=_blank");
-                e.preventDefault();
-                return;
-            }
-            target = target.parentElement;
-        }
-    }, true);
-
-    // Block setTimeout and setInterval based popups
-    const originalSetTimeout = window.setTimeout;
-    window.setTimeout = function(callback, delay) {
-        const args = Array.prototype.slice.call(arguments, 2);
-        if (typeof callback === 'string' && callback.includes('window.open')) {
-            console.log("Blocked setTimeout popup attempt");
-            return;
-        }
-        return originalSetTimeout(callback, delay, ...args);
-    };
-
-    const originalSetInterval = window.setInterval;
-    window.setInterval = function(callback, delay) {
-        const args = Array.prototype.slice.call(arguments, 2);
-        if (typeof callback === 'string' && callback.includes('window.open')) {
-            console.log("Blocked setInterval popup attempt");
-            return;
-        }
-        return originalSetInterval(callback, delay, ...args);
-    };
-})();
+    <link href="https://vjs.zencdn.net/7.17.0/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.17.0/video.min.js"></script>
 
     </script>
     <style>
@@ -527,37 +462,33 @@
             });
         }
 
-	        function showVideo(url) {
+		        function showVideo(url) {
 	    document.body.innerHTML = '';
 	
 	    const videoContainer = document.createElement('div');
 	    videoContainer.classList.add('video-container');
 	
-	    const outerIframe = document.createElement('iframe');
-	    outerIframe.style.width = '100%';
-	    outerIframe.style.height = '100%';
-	    outerIframe.style.border = 'none';
-	    outerIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+	    const videoElement = document.createElement('video');
+	    videoElement.classList.add('video-js');
+	    videoElement.setAttribute('controls', 'true');
+	    videoElement.setAttribute('preload', 'auto');
+	    videoElement.setAttribute('data-setup', '{}');
 	
-	    outerIframe.onload = function() {
-	        const innerIframe = outerIframe.contentDocument.createElement('iframe');
-	        innerIframe.src = url;
-	        innerIframe.allowFullscreen = true;
-	        innerIframe.setAttribute('allow', 'autoplay; encrypted-media');
-	        innerIframe.style.width = '100%';
-	        innerIframe.style.height = '100%';
-	        innerIframe.style.border = 'none';
+	    const sourceElement = document.createElement('source');
+	    sourceElement.setAttribute('src', url);
+	    sourceElement.setAttribute('type', 'video/mp4'); // Adjust the type based on your video source
 	
-	        outerIframe.contentDocument.body.appendChild(innerIframe);
-	    };
-	
-	    videoContainer.appendChild(outerIframe);
+	    videoElement.appendChild(sourceElement);
+	    videoContainer.appendChild(videoElement);
 	    document.body.appendChild(videoContainer);
 	
 	    const footer = document.querySelector('.footer');
 	    if (footer) {
 	        footer.remove();
 	    }
+	
+	    // Initialize Video.js player
+	    videojs(videoElement);
 	}
 
         window.onload = function() {
