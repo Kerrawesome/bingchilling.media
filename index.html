@@ -5,64 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bing Chilling Media</title>
     <script>
-        const whitelist = ['https://vidsrc.pro'];
+    function setVh() {
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    window.addEventListener('resize', setVh);
+    window.addEventListener('load', setVh);
+    setVh();
 
-        function setVh() {
-            let vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        }
-
-        window.addEventListener('resize', setVh);
-        window.addEventListener('load', setVh);
-        setVh();
-
-        function isWhitelisted(url) {
-            return whitelist.some(allowedUrl => url.startsWith(allowedUrl));
-        }
-
-        document.addEventListener('click', function(event) {
-            const target = event.target.closest('a');
-            if (target && !isWhitelisted(target.href)) {
-                event.preventDefault();
-                alert('Navigation to this site is blocked.');
-            }
-        });
-
-        const originalOpen = window.open;
-        window.open = function(url, ...args) {
-            if (isWhitelisted(url)) {
-                return originalOpen.apply(this, [url, ...args]);
-            } else {
-                alert('Popup to this site is blocked.');
-                return null;
-            }
-        };
-
-        const originalLocationAssign = window.location.assign;
-        window.location.assign = function(url) {
-            if (isWhitelisted(url)) {
-                return originalLocationAssign.call(this, url);
-            } else {
-                alert('Redirect to this site is blocked.');
-            }
-        };
-
-        const originalLocationReplace = window.location.replace;
-        window.location.replace = function(url) {
-            if (isWhitelisted(url)) {
-                return originalLocationReplace.call(this, url);
-            } else {
-                alert('Redirect to this site is blocked.');
-            }
-        };
-
-        window.onbeforeunload = function(event) {
-            if (!isWhitelisted(window.location.href)) {
-                event.preventDefault();
-                event.returnValue = '';
-                return 'Are you sure you want to leave this page?';
-            }
-        };
     </script>
     <style>
         body {
@@ -75,7 +25,7 @@
             margin: 0;
             font-family: 'Roboto', sans-serif;
             color: #ffffff;
-            overflow-y: auto;
+			overflow-y: auto;
         }
 
         .hidden {
@@ -153,10 +103,10 @@
 
         .video-container {
             width: 900px;
-            height: 600px;
+			height: 600px;
             margin-top: 20px;
             position: relative;
-            overflow: hidden;
+			overflow: hidden;
         }
 
         .video-container iframe {
@@ -170,7 +120,7 @@
             margin-top: 20px;
             font-size: 14px;
             color: #bbb;
-            text-align: center;
+			text-align: center;
         }
 
         .footer a {
@@ -209,7 +159,7 @@
             const input = document.createElement('input');
             input.type = 'text';
             input.id = 'tmdb-query';
-            input.placeholder = 'Search 🔍';
+			input.placeholder = 'Search 🔍';
             input.addEventListener('input', function() {
                 debounce(searchSuggestions, 300);
             });
@@ -344,11 +294,11 @@
                 }
             };
             promptBox.appendChild(confirmButton);
-            
-            const footer = document.querySelector('.footer');
-            if (footer) {
-                footer.remove();
-            }
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
 
             const cancelButton = document.createElement('button');
             cancelButton.textContent = 'Back';
@@ -424,11 +374,11 @@
             promptBox.appendChild(cancelButton);
 
             document.body.appendChild(promptBox);
-            
-            const footer = document.querySelector('.footer');
-            if (footer) {
-                footer.remove();
-            }
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
 
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter' && currentPrompt === 'seasons-prompt-box') {
@@ -496,11 +446,11 @@
             promptBox.appendChild(cancelButton);
 
             document.body.appendChild(promptBox);
-            
-            const footer = document.querySelector('.footer');
-            if (footer) {
-                footer.remove();
-            }
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
 
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter' && currentPrompt === 'episodes-prompt-box') {
@@ -519,14 +469,14 @@
             iframe.src = url;
             iframe.allowFullscreen = true;
             iframe.setAttribute('allow', 'autoplay; encrypted-media');
-            
+			
             videoContainer.appendChild(iframe);
             document.body.appendChild(videoContainer);
 
             const footer = document.querySelector('.footer');
-            if (footer) {
-                footer.remove();
-            }
+			if (footer) {
+			footer.remove();
+    }
         }
 
         window.onload = function() {
@@ -535,8 +485,8 @@
             const footer = document.createElement('div');
             footer.classList.add('footer');
             footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br>\n<strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
-            footer.style.whiteSpace = 'pre-line';
-            footer.style.textAlign = 'center';
+			footer.style.whiteSpace = 'pre-line';
+			footer.style.textAlign = 'center';
             document.body.appendChild(footer);
         };
     </script>
