@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMDB Search</title>
+    <style>
+        body {
+            display: none;
+        }
+    </style>
+    <script>
+        function searchTMDB() {
+            var apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
+            var query = prompt('Enter the movie/TV show to search on TMDB:');
+            if (query) {
+                fetch('https://api.themoviedb.org/3/search/multi?query=' + encodeURIComponent(query) + '&include_adult=false&language=en-US&page=1', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    var result = data.results && data.results[0];
+                    if (result) {
+                        var id = result.id;
+                        var name = result.title || result.name;
+                        var year = (result.release_date || result.first_air_date || '').split('-')[0];
+                        var confirmationMessage = 'TMDB ID: ' + id + ' | ' + name + ' (' + (year ? year : 'Unknown Year') + ')\n\nIs this correct? Click OK to copy and continue.';
+                        var confirmation = confirm(confirmationMessage);
+                        if (confirmation) {
+                            navigator.clipboard.writeText(id).then(function() {
+                                alert('Copied to clipboard. Click OK to launch the VidSrc API.');
+                                window.location.href = 'https://vidsrc.pro/';
+                            }, function(err) {
+                                alert('Failed to copy TMDB ID.');
+                                window.location.href = 'https://vidsrc.pro/';
+                            });
+                        }
+                    } else {
+                        alert('No results found.');
+                    }
+                })
+                .catch(error => alert('Error fetching data from TMDB: ' + error));
+            }
+        }
+    </script>
+</head>
+<body onload="searchTMDB()">
+</body>
+</html>
