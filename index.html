@@ -13,15 +13,74 @@
     window.addEventListener('load', setVh);
     setVh();
 
-    // Function to block popups
-    function blockPopups() {
-        window.open = function(url, name, features) {
-            console.log("Popup blocked!", url);
-            return null;
-        };
-    }
+   // Overriding common popup methods
+(function() {
+    // Block window.open
+    window.open = function() {
+        console.log("Blocked window.open");
+        return null;
+    };
 
-    blockPopups();
+    // Block new windows using form submissions
+    HTMLFormElement.prototype.submit = (function(originalSubmit) {
+        return function() {
+            if (this.target === '_blank') {
+                console.log("Blocked form target=_blank");
+                return null;
+            }
+            originalSubmit.call(this);
+        };
+    })(HTMLFormElement.prototype.submit);
+
+    // Block alert, confirm, and prompt
+    window.alert = function() {
+        console.log("Blocked alert");
+        return null;
+    };
+    window.confirm = function() {
+        console.log("Blocked confirm");
+        return null;
+    };
+    window.prompt = function() {
+        console.log("Blocked prompt");
+        return null;
+    };
+
+    // Block onclick popup attempts
+    document.addEventListener('click', function(e) {
+        let target = e.target;
+        while (target) {
+            if (target.tagName === 'A' && target.target === '_blank') {
+                console.log("Blocked link target=_blank");
+                e.preventDefault();
+                return;
+            }
+            target = target.parentElement;
+        }
+    }, true);
+
+    // Block setTimeout and setInterval based popups
+    const originalSetTimeout = window.setTimeout;
+    window.setTimeout = function(callback, delay) {
+        const args = Array.prototype.slice.call(arguments, 2);
+        if (typeof callback === 'string' && callback.includes('window.open')) {
+            console.log("Blocked setTimeout popup attempt");
+            return;
+        }
+        return originalSetTimeout(callback, delay, ...args);
+    };
+
+    const originalSetInterval = window.setInterval;
+    window.setInterval = function(callback, delay) {
+        const args = Array.prototype.slice.call(arguments, 2);
+        if (typeof callback === 'string' && callback.includes('window.open')) {
+            console.log("Blocked setInterval popup attempt");
+            return;
+        }
+        return originalSetInterval(callback, delay, ...args);
+    };
+})();
+
     </script>
     <style>
         body {
