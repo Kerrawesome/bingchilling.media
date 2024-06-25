@@ -19,9 +19,12 @@
             console.log("Popup blocked!");
             return null;
         };
+        document.addEventListener('click', function(event) {
+            event.preventDefault();
+        }, true);
     }
-    window.addEventListener('beforeunload', blockPopups);
-    window.addEventListener('unload', blockPopups);
+
+    blockPopups();
     </script>
     <style>
         body {
@@ -447,8 +450,6 @@
 
             videoContainer.appendChild(iframe);
             document.body.appendChild(videoContainer);
-
-            blockPopups();
         }
 
         window.onload = createInitialPrompt;
