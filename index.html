@@ -34,6 +34,7 @@
             margin: 0;
             font-family: 'Roboto', sans-serif;
             color: #ffffff;
+			overflow: hidden;
         }
 
         .hidden {
@@ -110,12 +111,13 @@
         }
 
         .video-container {
-            width: 90%;
+            width: 100%;
             max-width: 800px;
             margin-top: 20px;
             position: relative;
             padding-bottom: 56.25%; /* 16:9 aspect ratio */
             height: 0;
+			overflow: hidden;
         }
 
         .video-container iframe {
@@ -170,6 +172,7 @@
             const input = document.createElement('input');
             input.type = 'text';
             input.id = 'tmdb-query';
+			input.placeholder = 'Search 🔍';
             input.addEventListener('input', function() {
                 debounce(searchSuggestions, 300);
             });
@@ -304,9 +307,14 @@
                 }
             };
             promptBox.appendChild(confirmButton);
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
 
             const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
+            cancelButton.textContent = 'Back';
             cancelButton.onclick = function() {
                 promptBox.remove();
                 document.getElementById('initial-prompt-box').classList.remove('hidden');
@@ -371,7 +379,7 @@
             promptBox.appendChild(confirmButton);
 
             const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
+            cancelButton.textContent = 'Back';
             cancelButton.onclick = function() {
                 promptBox.remove();
                 document.getElementById('initial-prompt-box').classList.remove('hidden');
@@ -379,6 +387,11 @@
             promptBox.appendChild(cancelButton);
 
             document.body.appendChild(promptBox);
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
 
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter' && currentPrompt === 'seasons-prompt-box') {
@@ -438,7 +451,7 @@
             promptBox.appendChild(confirmButton);
 
             const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
+            cancelButton.textContent = 'Back';
             cancelButton.onclick = function() {
                 promptBox.remove();
                 document.getElementById('initial-prompt-box').classList.remove('hidden');
@@ -446,6 +459,11 @@
             promptBox.appendChild(cancelButton);
 
             document.body.appendChild(promptBox);
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
 
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter' && currentPrompt === 'episodes-prompt-box') {
@@ -468,10 +486,10 @@
             videoContainer.appendChild(iframe);
             document.body.appendChild(videoContainer);
 
-            const footer = document.createElement('div');
-            footer.classList.add('footer');
-            footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT';
-            document.body.appendChild(footer);
+            const footer = document.querySelector('.footer');
+			if (footer) {
+			footer.remove();
+    }
         }
 
         window.onload = function() {
@@ -479,7 +497,9 @@
 
             const footer = document.createElement('div');
             footer.classList.add('footer');
-            footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT';
+            footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br>\n<strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
+			footer.style.whiteSpace = 'pre-line';
+			footer.style.textAlign = 'center';
             document.body.appendChild(footer);
         };
     </script>
