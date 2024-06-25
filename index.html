@@ -537,6 +537,7 @@
             iframe.src = url;
             iframe.allowFullscreen = true;
             iframe.setAttribute('allow', 'autoplay; encrypted-media');
+	    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
 
             videoContainer.appendChild(iframe);
             document.body.appendChild(videoContainer);
