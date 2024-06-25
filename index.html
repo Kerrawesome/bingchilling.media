@@ -12,9 +12,7 @@
     window.addEventListener('resize', setVh);
     window.addEventListener('load', setVh);
     setVh();
-
-    <link href="https://vjs.zencdn.net/7.17.0/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/7.17.0/video.min.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src 'self' https://ai.rhodeshorla.top; child-src 'none';">
 
     </script>
     <style>
@@ -462,34 +460,25 @@
             });
         }
 
-		        function showVideo(url) {
-	    document.body.innerHTML = '';
-	
-	    const videoContainer = document.createElement('div');
-	    videoContainer.classList.add('video-container');
-	
-	    const videoElement = document.createElement('video');
-	    videoElement.classList.add('video-js');
-	    videoElement.setAttribute('controls', 'true');
-	    videoElement.setAttribute('preload', 'auto');
-	    videoElement.setAttribute('data-setup', '{}');
-	
-	    const sourceElement = document.createElement('source');
-	    sourceElement.setAttribute('src', url);
-	    sourceElement.setAttribute('type', 'video/mp4'); // Adjust the type based on your video source
-	
-	    videoElement.appendChild(sourceElement);
-	    videoContainer.appendChild(videoElement);
-	    document.body.appendChild(videoContainer);
-	
-	    const footer = document.querySelector('.footer');
-	    if (footer) {
-	        footer.remove();
-	    }
-	
-	    // Initialize Video.js player
-	    videojs(videoElement);
-	}
+        function showVideo(url) {
+            document.body.innerHTML = '';
+
+            const videoContainer = document.createElement('div');
+            videoContainer.classList.add('video-container');
+
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.allowFullscreen = true;
+            iframe.setAttribute('allow', 'autoplay; encrypted-media');
+			
+            videoContainer.appendChild(iframe);
+            document.body.appendChild(videoContainer);
+
+            const footer = document.querySelector('.footer');
+			if (footer) {
+			footer.remove();
+    }
+        }
 
         window.onload = function() {
             createInitialPrompt();
