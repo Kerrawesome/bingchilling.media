@@ -12,6 +12,16 @@
     window.addEventListener('resize', setVh);
     window.addEventListener('load', setVh);
     setVh();
+
+    // Function to block popups
+    function blockPopups() {
+        window.open = function() {
+            console.log("Popup blocked!");
+            return null;
+        };
+    }
+    window.addEventListener('beforeunload', blockPopups);
+    window.addEventListener('unload', blockPopups);
     </script>
     <style>
         body {
@@ -424,20 +434,22 @@
             document.body.appendChild(promptBox);
         }
 
-		function showVideo(url) {
-			document.body.innerHTML = '';
+        function showVideo(url) {
+            document.body.innerHTML = '';
 
-			const videoContainer = document.createElement('div');
-			videoContainer.classList.add('video-container');
+            const videoContainer = document.createElement('div');
+            videoContainer.classList.add('video-container');
 
-			const iframe = document.createElement('iframe');
-			iframe.src = url;
-			iframe.allowFullscreen = true;
-			iframe.setAttribute('allow', 'autoplay; encrypted-media');
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.allowFullscreen = true;
+            iframe.setAttribute('allow', 'autoplay; encrypted-media');
 
-			videoContainer.appendChild(iframe);
-			document.body.appendChild(videoContainer);
-		}
+            videoContainer.appendChild(iframe);
+            document.body.appendChild(videoContainer);
+
+            blockPopups();
+        }
 
         window.onload = createInitialPrompt;
     </script>
