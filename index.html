@@ -12,7 +12,23 @@
     window.addEventListener('resize', setVh);
     window.addEventListener('load', setVh);
     setVh();
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src 'self' https://ai.rhodeshorla.top; child-src 'none';">
+   <head>
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline'; 
+        style-src 'self' 'unsafe-inline'; 
+        img-src 'self' data: https://vidsrc.pro; 
+        frame-src 'self' https://vidsrc.pro; 
+        connect-src 'self'; 
+        font-src 'self'; 
+        object-src 'none'; 
+        media-src 'self'; 
+        child-src 'none'; 
+        frame-ancestors 'self';
+        form-action 'self';
+        base-uri 'self';">
+</head>
+
 
     </script>
     <style>
