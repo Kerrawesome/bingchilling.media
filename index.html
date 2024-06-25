@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bing Chilling Media</title>
     <script>
-        function setVh() {
-            let vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        }
-        window.addEventListener('resize', setVh);
-        window.addEventListener('load', setVh);
-        setVh();
+    function setVh() {
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    window.addEventListener('resize', setVh);
+    window.addEventListener('load', setVh);
+    setVh();
+
     </script>
     <style>
         body {
@@ -24,7 +25,7 @@
             margin: 0;
             font-family: 'Roboto', sans-serif;
             color: #ffffff;
-            overflow-y: auto;
+			overflow-y: auto;
         }
 
         .hidden {
@@ -101,12 +102,11 @@
         }
 
         .video-container {
-            width: 100%;
-            max-width: 1200px;
-            height: calc(var(--vh, 1vh) * 90);
+            width: 900px;
+			height: 600px;
             margin-top: 20px;
             position: relative;
-            overflow: hidden;
+			overflow: hidden;
         }
 
         .video-container iframe {
@@ -120,7 +120,7 @@
             margin-top: 20px;
             font-size: 14px;
             color: #bbb;
-            text-align: center;
+			text-align: center;
         }
 
         .footer a {
@@ -129,10 +129,20 @@
         }
     </style>
     <script>
+        let debounceTimer;
+        let currentPrompt;
+
+        function debounce(callback, delay) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(callback, delay);
+        }
+
         function createInitialPrompt() {
             const promptBox = document.createElement('div');
             promptBox.classList.add('prompt-box');
             promptBox.id = 'initial-prompt-box';
+
+            currentPrompt = 'initial-prompt-box';
 
             const headingText = document.createElement('h1');
             headingText.textContent = 'Bing Chilling Media';
@@ -149,25 +159,324 @@
             const input = document.createElement('input');
             input.type = 'text';
             input.id = 'tmdb-query';
-            input.placeholder = 'Search 🔍';
+			input.placeholder = 'Search 🔍';
+            input.addEventListener('input', function() {
+                debounce(searchSuggestions, 300);
+            });
             promptBox.appendChild(input);
 
+            const suggestionsBox = document.createElement('div');
+            suggestionsBox.id = 'suggestions-box';
+            suggestionsBox.classList.add('suggestions');
+            promptBox.appendChild(suggestionsBox);
+
             document.body.appendChild(promptBox);
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && currentPrompt === 'initial-prompt-box') {
+                    searchTMDB();
+                }
+            });
         }
 
-        function showVideo() {
-            document.getElementById('initial-prompt-box').remove();
+        async function searchSuggestions() {
+            var apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
+            var query = document.getElementById('tmdb-query').value;
+            if (query) {
+                try {
+                    let response = await fetch('https://api.themoviedb.org/3/search/multi?query=' + encodeURIComponent(query) + '&include_adult=false&language=en-US&page=1', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + apiKey,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    let data = await response.json();
+                    displaySuggestions(data.results);
+                } catch (error) {
+                    console.error('Error fetching data from TMDB: ' + error);
+                }
+            } else {
+                clearSuggestions();
+            }
+        }
+
+        function displaySuggestions(results) {
+            const suggestionsBox = document.getElementById('suggestions-box');
+            suggestionsBox.innerHTML = '';
+            if (results && results.length > 0) {
+                const uniqueResults = [];
+                const seenTitles = new Set();
+
+                results.forEach(result => {
+                    const name = result.title || result.name;
+                    const year = (result.release_date || result.first_air_date || '').split('-')[0];
+                    const uniqueKey = `${name}-${year}`;
+
+                    if (!seenTitles.has(uniqueKey) && name && year) {
+                        uniqueResults.push({ name, year, result });
+                        seenTitles.add(uniqueKey);
+                    }
+                });
+
+                uniqueResults.forEach(({ name, year, result }) => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.classList.add('suggestion-item');
+                    suggestionItem.textContent = `${name} (${year})`;
+                    suggestionItem.onclick = function() {
+                        document.getElementById('tmdb-query').value = name;
+                        clearSuggestions();
+                        searchTMDB(result);
+                    };
+                    suggestionsBox.appendChild(suggestionItem);
+                });
+            }
+        }
+
+        function clearSuggestions() {
+            const suggestionsBox = document.getElementById('suggestions-box');
+            suggestionsBox.innerHTML = '';
+        }
+
+        async function searchTMDB(result) {
+            if (result) {
+                var id = result.id;
+                var name = result.title || result.name;
+                var year = (result.release_date || result.first_air_date || '').split('-')[0];
+                var posterPath = result.poster_path ? 'https://image.tmdb.org/t/p/w500' + result.poster_path : null;
+                var confirmationMessage = name + ' (' + (year ? year : 'Unknown Year') + ')';
+                showConfirmationPrompt(confirmationMessage, id, posterPath, result.media_type);
+            }
+        }
+
+        function showConfirmationPrompt(message, id, posterPath, mediaType) {
+            document.getElementById('initial-prompt-box').classList.add('hidden');
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'confirmation-prompt-box';
+
+            currentPrompt = 'confirmation-prompt-box';
+
+            const headingText = document.createElement('h2');
+            headingText.textContent = 'You selected';
+            headingText.style.fontSize = '30px';
+            headingText.style.marginBottom = '10px';
+            headingText.style.whiteSpace = 'pre-line';
+            promptBox.appendChild(headingText);
+
+            const footerText = document.createElement('p');
+            footerText.textContent = 'TMDB ID: ' + id;
+            footerText.style.marginBottom = '20px';
+            promptBox.appendChild(footerText);
+
+            if (posterPath) {
+                const posterImage = document.createElement('img');
+                posterImage.src = posterPath;
+                promptBox.appendChild(posterImage);
+            }
+
+            const promptText = document.createElement('p');
+            promptText.textContent = message;
+            promptText.style.marginBottom = '20px';
+            promptText.style.whiteSpace = 'pre-line';
+            promptBox.appendChild(promptText);
+
+            const confirmButton = document.createElement('button');
+            confirmButton.textContent = 'OK';
+            confirmButton.id = 'ok-button';
+            confirmButton.onclick = function() {
+                if (mediaType === 'movie') {
+                    const movieUrl = `https://vidsrc.pro/embed/movie/${id}`;
+                    showVideo(movieUrl);
+                } else if (mediaType === 'tv') {
+                    fetchSeasons(id);
+                }
+            };
+            promptBox.appendChild(confirmButton);
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Back';
+            cancelButton.onclick = function() {
+                promptBox.remove();
+                document.getElementById('initial-prompt-box').classList.remove('hidden');
+            };
+            promptBox.appendChild(cancelButton);
+
+            document.body.appendChild(promptBox);
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && currentPrompt === 'confirmation-prompt-box') {
+                    confirmButton.click();
+                }
+            });
+        }
+
+        async function fetchSeasons(tvId) {
+            var apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
+            try {
+                let response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}?language=en-US`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Accept': 'application/json'
+                    }
+                });
+                let data = await response.json();
+                showSeasonsPrompt(tvId, data.seasons);
+            } catch (error) {
+                alert('Error fetching seasons data from TMDB: ' + error);
+            }
+        }
+
+        function showSeasonsPrompt(tvId, seasons) {
+            document.getElementById('confirmation-prompt-box').remove();
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'seasons-prompt-box';
+
+            currentPrompt = 'seasons-prompt-box';
+
+            const promptText = document.createElement('p');
+            promptText.textContent = 'Select a season:';
+            promptBox.appendChild(promptText);
+
+            const select = document.createElement('select');
+            select.id = 'season-select';
+            seasons.forEach(season => {
+                const option = document.createElement('option');
+                option.value = season.season_number;
+                option.textContent = season.name;
+                select.appendChild(option);
+            });
+            promptBox.appendChild(select);
+
+            const confirmButton = document.createElement('button');
+            confirmButton.textContent = 'OK';
+            confirmButton.onclick = function() {
+                const seasonNumber = select.value;
+                fetchEpisodes(tvId, seasonNumber);
+            };
+            promptBox.appendChild(confirmButton);
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Back';
+            cancelButton.onclick = function() {
+                promptBox.remove();
+                document.getElementById('initial-prompt-box').classList.remove('hidden');
+            };
+            promptBox.appendChild(cancelButton);
+
+            document.body.appendChild(promptBox);
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && currentPrompt === 'seasons-prompt-box') {
+                    confirmButton.click();
+                }
+            });
+        }
+
+        async function fetchEpisodes(tvId, seasonNumber) {
+            var apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
+            try {
+                let response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?language=en-US`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Accept': 'application/json'
+                    }
+                });
+                let data = await response.json();
+                showEpisodesPrompt(tvId, seasonNumber, data.episodes);
+            } catch (error) {
+                alert('Error fetching episodes data from TMDB: ' + error);
+            }
+        }
+
+        function showEpisodesPrompt(tvId, seasonNumber, episodes) {
+            document.getElementById('seasons-prompt-box').remove();
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'episodes-prompt-box';
+
+            currentPrompt = 'episodes-prompt-box';
+
+            const promptText = document.createElement('p');
+            promptText.textContent = 'Select an episode:';
+            promptBox.appendChild(promptText);
+
+            const select = document.createElement('select');
+            select.id = 'episode-select';
+            episodes.forEach(episode => {
+                const option = document.createElement('option');
+                option.value = episode.episode_number;
+                const episodeName = episode.name !== `Episode ${episode.episode_number}` ? episode.name : '';
+                option.textContent = `Episode ${episode.episode_number}${episodeName ? ' - ' + episodeName : ''}`;
+                select.appendChild(option);
+            });
+            promptBox.appendChild(select);
+
+            const confirmButton = document.createElement('button');
+            confirmButton.textContent = 'OK';
+            confirmButton.onclick = function() {
+                const episodeNumber = select.value;
+                const tvUrl = `https://vidsrc.pro/embed/tv/${tvId}/${seasonNumber}/${episodeNumber}`;
+                showVideo(tvUrl);
+            };
+            promptBox.appendChild(confirmButton);
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Back';
+            cancelButton.onclick = function() {
+                promptBox.remove();
+                document.getElementById('initial-prompt-box').classList.remove('hidden');
+            };
+            promptBox.appendChild(cancelButton);
+
+            document.body.appendChild(promptBox);
+			
+			const footer = document.querySelector('.footer');
+			if (footer) {
+				footer.remove();
+			}
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && currentPrompt === 'episodes-prompt-box') {
+                    confirmButton.click();
+                }
+            });
+        }
+
+        function showVideo(url) {
+            document.body.innerHTML = '';
 
             const videoContainer = document.createElement('div');
             videoContainer.classList.add('video-container');
 
             const iframe = document.createElement('iframe');
-            iframe.src = 'https://vidsrc.pro';
+            iframe.src = url;
             iframe.allowFullscreen = true;
             iframe.setAttribute('allow', 'autoplay; encrypted-media');
+			
             videoContainer.appendChild(iframe);
-
             document.body.appendChild(videoContainer);
+
+            const footer = document.querySelector('.footer');
+			if (footer) {
+			footer.remove();
+    }
         }
 
         window.onload = function() {
@@ -176,15 +485,9 @@
             const footer = document.createElement('div');
             footer.classList.add('footer');
             footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br>\n<strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
-            footer.style.whiteSpace = 'pre-line';
-            footer.style.textAlign = 'center';
+			footer.style.whiteSpace = 'pre-line';
+			footer.style.textAlign = 'center';
             document.body.appendChild(footer);
-
-            document.getElementById('tmdb-query').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    showVideo();
-                }
-            });
         };
     </script>
 </head>
