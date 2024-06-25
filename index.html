@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bing Chilling Media</title>
-	<script>
+    <script>
     function setVh() {
         let vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -12,7 +12,7 @@
     window.addEventListener('resize', setVh);
     window.addEventListener('load', setVh);
     setVh();
-	</script>
+    </script>
     <style>
         body {
             display: flex;
@@ -65,7 +65,7 @@
         img {
             max-width: 60%;
             border-radius: 10px;
-            margin-bottom: 0px;
+            margin-bottom: 5px;
         }
     </style>
     <script>
@@ -87,6 +87,11 @@
             const input = document.createElement('input');
             input.type = 'text';
             input.id = 'tmdb-query';
+            input.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    searchTMDB();
+                }
+            });
             promptBox.appendChild(input);
 
             const searchButton = document.createElement('button');
@@ -95,6 +100,12 @@
             promptBox.appendChild(searchButton);
 
             document.body.appendChild(promptBox);
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && document.getElementById('confirmation-prompt-box')) {
+                    document.getElementById('ok-button').click();
+                }
+            });
         }
 
         async function searchTMDB() {
@@ -138,10 +149,10 @@
             headingText.textContent = 'You selected';
             headingText.style.fontSize = '30px';
             headingText.style.marginBottom = '10px';
-			headingText.style.whiteSpace = 'pre-line';
+            headingText.style.whiteSpace = 'pre-line';
             promptBox.appendChild(headingText);
-			
-			const footerText = document.createElement('p');
+            
+            const footerText = document.createElement('p');
             footerText.textContent = 'TMDB ID: ' + id;
             footerText.style.marginBottom = '20px';
             promptBox.appendChild(footerText);
@@ -154,12 +165,13 @@
 
             const promptText = document.createElement('p');
             promptText.textContent = message;
-			promptText.style.marginBottom = '20px';
+            promptText.style.marginBottom = '20px';
             promptText.style.whiteSpace = 'pre-line';
             promptBox.appendChild(promptText);
 
             const confirmButton = document.createElement('button');
             confirmButton.textContent = 'OK';
+            confirmButton.id = 'ok-button';
             confirmButton.onclick = function() {
                 showCopyPrompt(id);
             };
