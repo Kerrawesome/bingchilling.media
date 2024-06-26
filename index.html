@@ -72,13 +72,13 @@
             cursor: pointer;
             border: none;
             border-radius: 5px;
-            background-color: #6200ee;
+            background-color: #e68a00;
             color: #ffffff;
             transition: background-color 0.3s;
         }
 
         button:hover {
-            background-color: #3700b3;
+            background-color: #cc6f00;
         }
 
         img {
@@ -121,6 +121,15 @@
             color: #6200ee;
             text-decoration: none;
         }
+		
+		.centered-image {
+			position: absolute;
+			top: -70px; /* Adjust this value as needed to position the image half in and half out */
+			left: 50%;
+			transform: translateX(-50%);
+			width: 100px; /* Adjust the size as needed */
+			height: auto;
+		}
     </style>
 
     <script>
@@ -138,6 +147,12 @@
             promptBox.id = 'initial-prompt-box';
 
             currentPrompt = 'initial-prompt-box';
+
+			const image = document.createElement('img');
+			image.src = 'https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png';
+			image.alt = 'Ice Cream';
+			image.classList.add('centered-image');
+			promptBox.appendChild(image);
 
             const headingText = document.createElement('h1');
             headingText.textContent = 'Bing Chilling Media';
@@ -366,7 +381,7 @@
             iframe.style.height = 'calc(100vh - 200px)';
             iframe.style.border = 'none';
             iframe.style.borderRadius = '10px';
-	    iframe.allowFullscreen = true;
+			iframe.allowFullscreen = true;
             promptBox.appendChild(iframe);
 
             const footer = createFooter();
