@@ -328,7 +328,7 @@
             promptBox.id = 'copy-prompt-box';
 
             const promptText = document.createElement('p');
-            promptText.textContent = 'Copy the TMDB ID, then launch the video API.';
+            promptText.innerHTML = 'Copy the TMDB ID, then launch the video API. <br><br> For TV series, use the format ID | SEASON | EPISODE.';
             promptBox.appendChild(promptText);
 
             const textArea = document.createElement('textarea');
