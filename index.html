@@ -12,7 +12,6 @@
     window.addEventListener('resize', setVh);
     window.addEventListener('load', setVh);
     setVh();
-
     </script>
     <style>
         body {
@@ -38,11 +37,19 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
             text-align: center;
-            width: 90%;
-            max-width: 400px;
+            max-width: 90%;
+			max-height: 90%;
+
             position: relative;
             margin-bottom: 20px;
         }
+
+		.prompt-box iframe {
+			width: 100%;
+			height: calc(100vh - 100px);
+			border: none;
+			border-radius: 5px;
+		}
 
         input, textarea, select {
             width: calc(100% - 20px);
@@ -74,7 +81,7 @@
         }
 
         img {
-            max-width: 60%;
+            max-width: 50%;
             border-radius: 10px;
             margin-bottom: 5px;
         }
@@ -85,7 +92,7 @@
             border: 1px solid #333;
             border-radius: 5px;
             width: 100%;
-            max-width: 400px;
+            max-width: 350px;
             z-index: 1000;
             margin-top: 5px;
             left: 50%;
@@ -94,26 +101,12 @@
 
         .suggestion-item {
             padding: 10px;
+			font-size: 15px;
             cursor: pointer;
         }
 
         .suggestion-item:hover {
             background-color: #333;
-        }
-
-        .video-container {
-            width: 900px;
-			height: 600px;
-            margin-top: 20px;
-            position: relative;
-			overflow: hidden;
-        }
-
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 10px;
         }
 
         .footer {
@@ -128,8 +121,9 @@
             text-decoration: none;
         }
     </style>
+
     <script>
-        let debounceTimer;
+	let debounceTimer;
         let currentPrompt;
 
         function debounce(callback, delay) {
@@ -169,6 +163,9 @@
             suggestionsBox.id = 'suggestions-box';
             suggestionsBox.classList.add('suggestions');
             promptBox.appendChild(suggestionsBox);
+			
+			const footer = createFooter();
+            promptBox.appendChild(footer);
 
             document.body.appendChild(promptBox);
 
@@ -259,7 +256,7 @@
             currentPrompt = 'confirmation-prompt-box';
 
             const headingText = document.createElement('h2');
-            headingText.textContent = 'You selected';
+            headingText.textContent = 'Your selection is';
             headingText.style.fontSize = '30px';
             headingText.style.marginBottom = '10px';
             headingText.style.whiteSpace = 'pre-line';
@@ -286,19 +283,9 @@
             confirmButton.textContent = 'OK';
             confirmButton.id = 'ok-button';
             confirmButton.onclick = function() {
-                if (mediaType === 'movie') {
-                    const movieUrl = `https://vidsrc.pro/embed/movie/${id}`;
-                    showVideo(movieUrl);
-                } else if (mediaType === 'tv') {
-                    fetchSeasons(id);
-                }
+                showCopyPrompt(id);
             };
             promptBox.appendChild(confirmButton);
-			
-			const footer = document.querySelector('.footer');
-			if (footer) {
-				footer.remove();
-			}
 
             const cancelButton = document.createElement('button');
             cancelButton.textContent = 'Back';
@@ -309,185 +296,87 @@
             promptBox.appendChild(cancelButton);
 
             document.body.appendChild(promptBox);
-
-            document.addEventListener('keydown', function(event) {
+			
+			document.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter' && currentPrompt === 'confirmation-prompt-box') {
                     confirmButton.click();
                 }
             });
         }
 
-        async function fetchSeasons(tvId) {
-            var apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
-            try {
-                let response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}?language=en-US`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + apiKey,
-                        'Accept': 'application/json'
-                    }
-                });
-                let data = await response.json();
-                showSeasonsPrompt(tvId, data.seasons);
-            } catch (error) {
-                alert('Error fetching seasons data from TMDB: ' + error);
-            }
-        }
-
-        function showSeasonsPrompt(tvId, seasons) {
+        function showCopyPrompt(id) {
             document.getElementById('confirmation-prompt-box').remove();
 
             const promptBox = document.createElement('div');
             promptBox.classList.add('prompt-box');
-            promptBox.id = 'seasons-prompt-box';
-
-            currentPrompt = 'seasons-prompt-box';
+            promptBox.id = 'copy-prompt-box';
 
             const promptText = document.createElement('p');
-            promptText.textContent = 'Select a season:';
+            promptText.textContent = 'Copy the TMDB ID, then launch the video API.';
             promptBox.appendChild(promptText);
 
-            const select = document.createElement('select');
-            select.id = 'season-select';
-            seasons.forEach(season => {
-                const option = document.createElement('option');
-                option.value = season.season_number;
-                option.textContent = season.name;
-                select.appendChild(option);
-            });
-            promptBox.appendChild(select);
+            const textArea = document.createElement('textarea');
+            textArea.id = 'tmdb-id';
+            textArea.value = id;
+            textArea.readOnly = true;
+            textArea.style.fontSize = '30px';
+            promptBox.appendChild(textArea);
 
-            const confirmButton = document.createElement('button');
-            confirmButton.textContent = 'OK';
-            confirmButton.onclick = function() {
-                const seasonNumber = select.value;
-                fetchEpisodes(tvId, seasonNumber);
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copy to Clipboard';
+            copyButton.onclick = function() {
+                textArea.select();
+                document.execCommand('copy');
             };
-            promptBox.appendChild(confirmButton);
+            promptBox.appendChild(copyButton);
 
-            const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Back';
-            cancelButton.onclick = function() {
-                promptBox.remove();
-                document.getElementById('initial-prompt-box').classList.remove('hidden');
+            const launchButton = document.createElement('button');
+            launchButton.textContent = 'Launch VidSrc API';
+            launchButton.onclick = function() {
+                showEmbeddedVidSrc();
             };
-            promptBox.appendChild(cancelButton);
+            promptBox.appendChild(launchButton);
+
+            const footer = createFooter();
+            promptBox.appendChild(footer);
 
             document.body.appendChild(promptBox);
-			
-			const footer = document.querySelector('.footer');
-			if (footer) {
-				footer.remove();
-			}
-
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter' && currentPrompt === 'seasons-prompt-box') {
-                    confirmButton.click();
-                }
-            });
         }
 
-        async function fetchEpisodes(tvId, seasonNumber) {
-            var apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
-            try {
-                let response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?language=en-US`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + apiKey,
-                        'Accept': 'application/json'
-                    }
-                });
-                let data = await response.json();
-                showEpisodesPrompt(tvId, seasonNumber, data.episodes);
-            } catch (error) {
-                alert('Error fetching episodes data from TMDB: ' + error);
-            }
-        }
-
-        function showEpisodesPrompt(tvId, seasonNumber, episodes) {
-            document.getElementById('seasons-prompt-box').remove();
-
-            const promptBox = document.createElement('div');
-            promptBox.classList.add('prompt-box');
-            promptBox.id = 'episodes-prompt-box';
-
-            currentPrompt = 'episodes-prompt-box';
-
-            const promptText = document.createElement('p');
-            promptText.textContent = 'Select an episode:';
-            promptBox.appendChild(promptText);
-
-            const select = document.createElement('select');
-            select.id = 'episode-select';
-            episodes.forEach(episode => {
-                const option = document.createElement('option');
-                option.value = episode.episode_number;
-                const episodeName = episode.name !== `Episode ${episode.episode_number}` ? episode.name : '';
-                option.textContent = `Episode ${episode.episode_number}${episodeName ? ' - ' + episodeName : ''}`;
-                select.appendChild(option);
-            });
-            promptBox.appendChild(select);
-
-            const confirmButton = document.createElement('button');
-            confirmButton.textContent = 'OK';
-            confirmButton.onclick = function() {
-                const episodeNumber = select.value;
-                const tvUrl = `https://vidsrc.pro/embed/tv/${tvId}/${seasonNumber}/${episodeNumber}`;
-                showVideo(tvUrl);
-            };
-            promptBox.appendChild(confirmButton);
-
-            const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Back';
-            cancelButton.onclick = function() {
-                promptBox.remove();
-                document.getElementById('initial-prompt-box').classList.remove('hidden');
-            };
-            promptBox.appendChild(cancelButton);
-
-            document.body.appendChild(promptBox);
-			
-			const footer = document.querySelector('.footer');
-			if (footer) {
-				footer.remove();
-			}
-
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter' && currentPrompt === 'episodes-prompt-box') {
-                    confirmButton.click();
-                }
-            });
-        }
-
-        function showVideo(url) {
-            document.body.innerHTML = '';
-
-            const videoContainer = document.createElement('div');
-            videoContainer.classList.add('video-container');
-
-            const iframe = document.createElement('iframe');
-            iframe.src = url;
-            iframe.allowFullscreen = true;
-            iframe.setAttribute('allow', 'autoplay; encrypted-media');
-			
-            videoContainer.appendChild(iframe);
-            document.body.appendChild(videoContainer);
-
-            const footer = document.querySelector('.footer');
-			if (footer) {
-			footer.remove();
-    }
-        }
-
-        window.onload = function() {
-            createInitialPrompt();
-
+        function createFooter() {
             const footer = document.createElement('div');
             footer.classList.add('footer');
             footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br>\n<strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
 			footer.style.whiteSpace = 'pre-line';
 			footer.style.textAlign = 'center';
-            document.body.appendChild(footer);
+            return footer;
+        }
+
+        function showEmbeddedVidSrc() {
+            document.getElementById('copy-prompt-box').remove();
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'embed-prompt-box';
+
+            const iframe = document.createElement('iframe');
+            iframe.src = 'https://vidsrc.pro/';
+            iframe.style.width = 'calc(100vh + 300px)';
+            iframe.style.height = 'calc(100vh - 200px)';
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = '10px';
+			iframe.allowFullscreen = true;
+            promptBox.appendChild(iframe);
+
+            const footer = createFooter();
+            promptBox.appendChild(footer);
+
+            document.body.appendChild(promptBox);
+        }
+
+        window.onload = function() {
+            createInitialPrompt();
+
         };
     </script>
 </head>
