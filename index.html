@@ -38,21 +38,21 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
             text-align: center;
-            max-width: 90%;
-			max-height: 90%;
-
+            width: 90%;
+            max-height: 90%;
             position: relative;
             margin-bottom: 20px;
+            overflow-y: auto;
         }
 
 		.prompt-box iframe {
 			width: 100%;
-			height: calc(100vh - 100px);
+			height: calc(100vh - 300px);
 			border: none;
 			border-radius: 5px;
 		}
 
-        input, textarea, select {
+        input, textarea {
             width: calc(100% - 20px);
             margin-top: 10px;
             margin-bottom: 10px;
@@ -68,7 +68,7 @@
         button {
             margin: 5px;
             padding: 10px 20px;
-            font-size: 14px;
+            font-size: 10px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
@@ -82,39 +82,56 @@
         }
 
         img {
-            max-width: 50%;
+            max-width: 100%;
             border-radius: 10px;
             margin-bottom: 5px;
         }
 
-        .suggestions {
-            position: absolute;
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 5px;
-            width: 100%;
-            max-width: 350px;
-            z-index: 1000;
-            margin-top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
+        .results, .season-list, .episode-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+            justify-content: flex-start;
         }
 
-        .suggestion-item {
+        .result-item, .season-item, .episode-item {
             padding: 10px;
-			font-size: 15px;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            text-align: center;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            position: relative;
         }
 
-        .suggestion-item:hover {
-            background-color: #333;
+        .result-item img, .season-item img, .episode-item img {
+            align-self: flex-start;
+        }
+
+        .item-info h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .item-info p {
+            margin: 5px 0 0;
+            font-size: 14px;
         }
 
         .footer {
             margin-top: 20px;
             font-size: 14px;
             color: #bbb;
-			text-align: center;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .footer a {
@@ -123,17 +140,55 @@
         }
 		
 		.centered-image {
-			position: absolute;
-			top: -70px; /* Adjust this value as needed to position the image half in and half out */
-			left: 50%;
-			transform: translateX(-50%);
 			width: 100px; /* Adjust the size as needed */
 			height: auto;
+			margin-bottom: 0px;
+			margin-top: -10px; /* Lower the logo for proper padding */
 		}
+
+		.copy-button-container, .back-button {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: #e68a00;
+			padding: 8px;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.3s;
+			margin: 5px;
+			color: #ffffff;
+			font-size: 14px;
+		}
+
+		.copy-button-container:hover, .back-button:hover {
+			background-color: #cc6f00;
+		}
+
+		.copy-button-text {
+			text-align: left;
+		}
+
+		.copy-button-icon {
+			background-color: #ffcc00;
+			font-size: 20px;
+			padding: 0px;
+			padding-bottom: 2px;
+			border-radius: 3px;
+			margin-left: 5px;
+		}
+
+        .footer-text {
+            text-align: center;
+            flex-grow: 1;
+        }
     </style>
 
     <script>
 	let debounceTimer;
+        let tmdbId;
+        let seasonNumber;
+        let episodeNumber;
+        let isTvShow = false;
         let currentPrompt;
 
         function debounce(callback, delay) {
@@ -142,6 +197,10 @@
         }
 
         function createInitialPrompt() {
+            if (currentPrompt) {
+                document.getElementById(currentPrompt).remove();
+            }
+            
             const promptBox = document.createElement('div');
             promptBox.classList.add('prompt-box');
             promptBox.id = 'initial-prompt-box';
@@ -152,6 +211,7 @@
 			image.src = 'https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png';
 			image.alt = 'Ice Cream';
 			image.classList.add('centered-image');
+			image.id = 'ice-cream-logo';
 			promptBox.appendChild(image);
 
             const headingText = document.createElement('h1');
@@ -171,25 +231,20 @@
             input.id = 'tmdb-query';
 			input.placeholder = 'Search 🔍';
             input.addEventListener('input', function() {
+                document.getElementById('ice-cream-logo').style.display = 'none';
                 debounce(searchSuggestions, 300);
             });
             promptBox.appendChild(input);
 
-            const suggestionsBox = document.createElement('div');
-            suggestionsBox.id = 'suggestions-box';
-            suggestionsBox.classList.add('suggestions');
-            promptBox.appendChild(suggestionsBox);
-			
-			const footer = createFooter();
+            const resultsBox = document.createElement('div');
+            resultsBox.id = 'results-box';
+            resultsBox.classList.add('results');
+            promptBox.appendChild(resultsBox);
+
+            const footer = createFooter();
             promptBox.appendChild(footer);
 
             document.body.appendChild(promptBox);
-
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter' && currentPrompt === 'initial-prompt-box') {
-                    searchTMDB();
-                }
-            });
         }
 
         async function searchSuggestions() {
@@ -205,186 +260,305 @@
                         }
                     });
                     let data = await response.json();
-                    displaySuggestions(data.results);
+                    displayResults(data.results);
                 } catch (error) {
                     console.error('Error fetching data from TMDB: ' + error);
                 }
             } else {
-                clearSuggestions();
+                clearResults();
             }
         }
 
-        function displaySuggestions(results) {
-            const suggestionsBox = document.getElementById('suggestions-box');
-            suggestionsBox.innerHTML = '';
+        function displayResults(results) {
+            const resultsBox = document.getElementById('results-box');
+            resultsBox.innerHTML = '';
             if (results && results.length > 0) {
-                const uniqueResults = [];
-                const seenTitles = new Set();
-
                 results.forEach(result => {
                     const name = result.title || result.name;
                     const year = (result.release_date || result.first_air_date || '').split('-')[0];
-                    const uniqueKey = `${name}-${year}`;
+                    const posterPath = result.poster_path ? 'https://image.tmdb.org/t/p/w200' + result.poster_path : '';
+                    const mediaType = result.media_type === 'movie' ? 'Movie' : 'TV Show';
 
-                    if (!seenTitles.has(uniqueKey) && name && year) {
-                        uniqueResults.push({ name, year, result });
-                        seenTitles.add(uniqueKey);
+                    if (!posterPath) {
+                        return; // Skip listings without an image
                     }
-                });
 
-                uniqueResults.forEach(({ name, year, result }) => {
-                    const suggestionItem = document.createElement('div');
-                    suggestionItem.classList.add('suggestion-item');
-                    suggestionItem.textContent = `${name} (${year})`;
-                    suggestionItem.onclick = function() {
-                        document.getElementById('tmdb-query').value = name;
-                        clearSuggestions();
-                        searchTMDB(result);
+                    const resultItem = document.createElement('div');
+                    resultItem.classList.add('result-item');
+                    resultItem.onclick = function() {
+                        tmdbId = result.id;
+                        isTvShow = result.media_type === 'tv';
+                        if (isTvShow) {
+                            showSeasonSelectionPrompt(result.id, name);
+                        } else {
+                            showEmbeddedVidSrc();
+                        }
                     };
-                    suggestionsBox.appendChild(suggestionItem);
+
+                    if (posterPath) {
+                        const resultImage = document.createElement('img');
+                        resultImage.src = posterPath;
+                        resultItem.appendChild(resultImage);
+                    }
+
+                    const resultInfo = document.createElement('div');
+                    resultInfo.classList.add('item-info');
+
+                    const resultTitle = document.createElement('h3');
+                    resultTitle.textContent = name;
+                    resultInfo.appendChild(resultTitle);
+
+                    const resultDetails = document.createElement('p');
+                    resultDetails.textContent = `${year} • ${mediaType}`;
+                    resultInfo.appendChild(resultDetails);
+
+                    resultItem.appendChild(resultInfo);
+
+                    resultsBox.appendChild(resultItem);
                 });
             }
         }
 
-        function clearSuggestions() {
-            const suggestionsBox = document.getElementById('suggestions-box');
-            suggestionsBox.innerHTML = '';
+        function clearResults() {
+            const resultsBox = document.getElementById('results-box');
+            resultsBox.innerHTML = '';
         }
 
-        async function searchTMDB(result) {
-            if (result) {
-                var id = result.id;
-                var name = result.title || result.name;
-                var year = (result.release_date || result.first_air_date || '').split('-')[0];
-                var posterPath = result.poster_path ? 'https://image.tmdb.org/t/p/w500' + result.poster_path : null;
-                var confirmationMessage = name + ' (' + (year ? year : 'Unknown Year') + ')';
-                showConfirmationPrompt(confirmationMessage, id, posterPath, result.media_type);
-            }
-        }
-
-        function showConfirmationPrompt(message, id, posterPath, mediaType) {
-            document.getElementById('initial-prompt-box').classList.add('hidden');
+        async function showSeasonSelectionPrompt(tmdbId, showName) {
+            const previousPromptId = currentPrompt;
+            currentPrompt = 'season-selection-box';
+            document.getElementById(previousPromptId).remove();
 
             const promptBox = document.createElement('div');
             promptBox.classList.add('prompt-box');
-            promptBox.id = 'confirmation-prompt-box';
-
-            currentPrompt = 'confirmation-prompt-box';
+            promptBox.id = 'season-selection-box';
 
             const headingText = document.createElement('h2');
-            headingText.textContent = 'Your selection is';
+            headingText.textContent = 'Select Season'
             headingText.style.fontSize = '30px';
             headingText.style.marginBottom = '10px';
             headingText.style.whiteSpace = 'pre-line';
             promptBox.appendChild(headingText);
 
-            const footerText = document.createElement('p');
-            footerText.textContent = 'TMDB ID: ' + id;
-            footerText.style.marginBottom = '20px';
-            promptBox.appendChild(footerText);
+            const seasonList = document.createElement('div');
+            seasonList.classList.add('season-list');
+            promptBox.appendChild(seasonList);
 
-            if (posterPath) {
-                const posterImage = document.createElement('img');
-                posterImage.src = posterPath;
-                promptBox.appendChild(posterImage);
+            try {
+                let response = await fetch('https://api.themoviedb.org/3/tv/' + tmdbId + '?language=en-US', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM',
+                        'Accept': 'application/json'
+                    }
+                });
+                let data = await response.json();
+                data.seasons.forEach(season => {
+                    const seasonItem = document.createElement('div');
+                    seasonItem.classList.add('season-item');
+                    seasonItem.onclick = function() {
+                        seasonNumber = season.season_number;
+                        showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName);
+                    };
+
+                    if (season.poster_path) {
+                        const seasonImage = document.createElement('img');
+                        seasonImage.src = 'https://image.tmdb.org/t/p/w200' + season.poster_path;
+                        seasonItem.appendChild(seasonImage);
+                    }
+
+                    const seasonInfo = document.createElement('div');
+                    seasonInfo.classList.add('item-info');
+
+                    const seasonTitle = document.createElement('h3');
+                    seasonTitle.textContent = 'Season ' + season.season_number;
+                    seasonInfo.appendChild(seasonTitle);
+
+                    if (season.overview) {
+                        const seasonOverview = document.createElement('p');
+                        seasonOverview.textContent = season.overview;
+                        seasonInfo.appendChild(seasonOverview);
+                    }
+
+                    seasonItem.appendChild(seasonInfo);
+                    seasonList.appendChild(seasonItem);
+                });
+            } catch (error) {
+                console.error('Error fetching seasons from TMDB: ' + error);
             }
 
-            const promptText = document.createElement('p');
-            promptText.textContent = message;
-            promptText.style.marginBottom = '20px';
-            promptText.style.whiteSpace = 'pre-line';
-            promptBox.appendChild(promptText);
-
-            const confirmButton = document.createElement('button');
-            confirmButton.textContent = 'OK';
-            confirmButton.id = 'ok-button';
-            confirmButton.onclick = function() {
-                showCopyPrompt(id);
-            };
-            promptBox.appendChild(confirmButton);
-
-            const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Back';
-            cancelButton.onclick = function() {
-                promptBox.remove();
-                document.getElementById('initial-prompt-box').classList.remove('hidden');
-            };
-            promptBox.appendChild(cancelButton);
-
-            document.body.appendChild(promptBox);
-			
-			document.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter' && currentPrompt === 'confirmation-prompt-box') {
-                    confirmButton.click();
-                }
-            });
-        }
-
-        function showCopyPrompt(id) {
-            document.getElementById('confirmation-prompt-box').remove();
-
-            const promptBox = document.createElement('div');
-            promptBox.classList.add('prompt-box');
-            promptBox.id = 'copy-prompt-box';
-
-            const promptText = document.createElement('p');
-            promptText.innerHTML = 'Copy the TMDB ID, then launch the video API. <br><br> For TV series, use the format ID | SEASON | EPISODE.';
-            promptBox.appendChild(promptText);
-
-            const textArea = document.createElement('textarea');
-            textArea.id = 'tmdb-id';
-            textArea.value = id;
-            textArea.readOnly = true;
-            textArea.style.fontSize = '30px';
-            promptBox.appendChild(textArea);
-
-            const copyButton = document.createElement('button');
-            copyButton.textContent = 'Copy to Clipboard';
-            copyButton.onclick = function() {
-                textArea.select();
-                document.execCommand('copy');
-            };
-            promptBox.appendChild(copyButton);
-
-            const launchButton = document.createElement('button');
-            launchButton.textContent = 'Launch VidSrc API';
-            launchButton.onclick = function() {
-                showEmbeddedVidSrc();
-            };
-            promptBox.appendChild(launchButton);
-
-            const footer = createFooter();
+            const footer = createFooter(() => createInitialPrompt());
             promptBox.appendChild(footer);
 
             document.body.appendChild(promptBox);
         }
 
-        function createFooter() {
+        async function showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName) {
+            const previousPromptId = currentPrompt;
+            currentPrompt = 'episode-selection-box';
+            document.getElementById(previousPromptId).remove();
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'episode-selection-box';
+
+            const headingText = document.createElement('h2');
+            headingText.textContent = 'Select Episode | Season ' + seasonNumber;
+            headingText.style.fontSize = '30px';
+            headingText.style.marginBottom = '10px';
+            headingText.style.whiteSpace = 'pre-line';
+            promptBox.appendChild(headingText);
+
+            const episodeList = document.createElement('div');
+            episodeList.classList.add('episode-list');
+            promptBox.appendChild(episodeList);
+
+            try {
+                let response = await fetch('https://api.themoviedb.org/3/tv/' + tmdbId + '/season/' + seasonNumber + '?language=en-US', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM',
+                        'Accept': 'application/json'
+                    }
+                });
+                let data = await response.json();
+                data.episodes.forEach(episode => {
+                    const episodeItem = document.createElement('div');
+                    episodeItem.classList.add('episode-item');
+                    episodeItem.onclick = function() {
+                        episodeNumber = episode.episode_number;
+                        showEmbeddedVidSrc();
+                    };
+
+                    const episodeImage = document.createElement('img');
+                    episodeImage.src = 'https://image.tmdb.org/t/p/w200' + episode.still_path;
+                    episodeItem.appendChild(episodeImage);
+
+                    const episodeInfo = document.createElement('div');
+                    episodeInfo.classList.add('item-info');
+
+                    const episodeTitle = document.createElement('h3');
+                    episodeTitle.textContent = 'Episode ' + episode.episode_number + ': ' + episode.name;
+                    episodeInfo.appendChild(episodeTitle);
+
+                    if (episode.overview) {
+                        const episodeOverview = document.createElement('p');
+                        episodeOverview.textContent = episode.overview;
+                        episodeInfo.appendChild(episodeOverview);
+                    }
+
+                    episodeItem.appendChild(episodeInfo);
+                    episodeList.appendChild(episodeItem);
+                });
+            } catch (error) {
+                console.error('Error fetching episodes from TMDB: ' + error);
+            }
+
+            const footer = createFooter(() => createInitialPrompt());
+            promptBox.appendChild(footer);
+
+            document.body.appendChild(promptBox);
+        }
+
+        function createFooter(backFunction) {
             const footer = document.createElement('div');
             footer.classList.add('footer');
-            footer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br>\n<strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
-			footer.style.whiteSpace = 'pre-line';
-			footer.style.textAlign = 'center';
+
+            if (backFunction) {
+                const backButton = document.createElement('div');
+                backButton.classList.add('back-button');
+                backButton.textContent = '← Back';
+                backButton.onclick = backFunction;
+                footer.appendChild(backButton);
+            }
+
+            const disclaimer = document.createElement('div');
+            disclaimer.classList.add('footer-text');
+            disclaimer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br><strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
+            footer.appendChild(disclaimer);
+
             return footer;
         }
 
         function showEmbeddedVidSrc() {
-            document.getElementById('copy-prompt-box').remove();
+            const previousPromptId = currentPrompt;
+            currentPrompt = 'embed-prompt-box';
+            document.getElementById(previousPromptId).remove();
 
             const promptBox = document.createElement('div');
             promptBox.classList.add('prompt-box');
             promptBox.id = 'embed-prompt-box';
 
+            const copyButtonTmdbContainer = document.createElement('div');
+            copyButtonTmdbContainer.classList.add('copy-button-container');
+            copyButtonTmdbContainer.onclick = function() {
+                navigator.clipboard.writeText(tmdbId);
+            };
+
+            const copyButtonTmdbText = document.createElement('span');
+            copyButtonTmdbText.classList.add('copy-button-text');
+            copyButtonTmdbText.textContent = 'TMDB ID ' + tmdbId;
+            copyButtonTmdbContainer.appendChild(copyButtonTmdbText);
+
+            const copyButtonTmdbIcon = document.createElement('span');
+            copyButtonTmdbIcon.classList.add('copy-button-icon');
+            copyButtonTmdbIcon.textContent = '📋';
+            copyButtonTmdbContainer.appendChild(copyButtonTmdbIcon);
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.justifyContent = 'center';
+            buttonContainer.appendChild(copyButtonTmdbContainer);
+
+            if (isTvShow) {
+                const copyButtonSeasonContainer = document.createElement('div');
+                copyButtonSeasonContainer.classList.add('copy-button-container');
+                copyButtonSeasonContainer.onclick = function() {
+                    navigator.clipboard.writeText(seasonNumber);
+                };
+
+                const copyButtonSeasonText = document.createElement('span');
+                copyButtonSeasonText.classList.add('copy-button-text');
+                copyButtonSeasonText.textContent = 'Season ' + seasonNumber;
+                copyButtonSeasonContainer.appendChild(copyButtonSeasonText);
+
+                const copyButtonSeasonIcon = document.createElement('span');
+                copyButtonSeasonIcon.classList.add('copy-button-icon');
+                copyButtonSeasonIcon.textContent = '📋';
+                copyButtonSeasonContainer.appendChild(copyButtonSeasonIcon);
+
+                const copyButtonEpisodeContainer = document.createElement('div');
+                copyButtonEpisodeContainer.classList.add('copy-button-container');
+                copyButtonEpisodeContainer.onclick = function() {
+                    navigator.clipboard.writeText(episodeNumber);
+                };
+
+                const copyButtonEpisodeText = document.createElement('span');
+                copyButtonEpisodeText.classList.add('copy-button-text');
+                copyButtonEpisodeText.textContent = 'Episode ' + episodeNumber;
+                copyButtonEpisodeContainer.appendChild(copyButtonEpisodeText);
+
+                const copyButtonEpisodeIcon = document.createElement('span');
+                copyButtonEpisodeIcon.classList.add('copy-button-icon');
+                copyButtonEpisodeIcon.textContent = '📋';
+                copyButtonEpisodeContainer.appendChild(copyButtonEpisodeIcon);
+
+                buttonContainer.appendChild(copyButtonSeasonContainer);
+                buttonContainer.appendChild(copyButtonEpisodeContainer);
+            }
+
+            promptBox.appendChild(buttonContainer);
+
             const iframe = document.createElement('iframe');
             iframe.src = 'https://vidsrc.pro/';
             iframe.style.width = '100%';
-            iframe.style.height = 'calc(100vh - 200px)';
+            iframe.style.height = 'calc(100vh - 300px)';
             iframe.style.border = 'none';
             iframe.style.borderRadius = '10px';
 			iframe.allowFullscreen = true;
             promptBox.appendChild(iframe);
 
-            const footer = createFooter();
+            const footer = createFooter(() => createInitialPrompt());
             promptBox.appendChild(footer);
 
             document.body.appendChild(promptBox);
@@ -392,7 +566,6 @@
 
         window.onload = function() {
             createInitialPrompt();
-
         };
     </script>
 </head>
