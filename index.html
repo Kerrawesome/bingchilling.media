@@ -354,13 +354,14 @@
                     }
                 });
                 let data = await response.json();
-                data.seasons.forEach(season => {
-                    const seasonItem = document.createElement('div');
-                    seasonItem.classList.add('season-item');
-                    seasonItem.onclick = function() {
-                        seasonNumber = season.season_number;
-                        showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName);
-                    };
+       		data.seasons.forEach(season => {
+	            if (season.season_number !== 0) {
+	                const seasonItem = document.createElement('div');
+	                seasonItem.classList.add('season-item');
+	                seasonItem.onclick = function() {
+	                    seasonNumber = season.season_number;
+	                    showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName);
+                };
 
                     if (season.poster_path) {
                         const seasonImage = document.createElement('img');
