@@ -1,5 +1,5 @@
 # Bing Chilling Media
-A simple HTML site providing a convenient entertainment experience.
+A simple HTML site providing a convenient, ad-free entertainment experience.
 
 Bing Chilling Media uses the official ``TMDB API`` ([https://developer.themoviedb.org/](https://developer.themoviedb.org/)) to provide listings, and media sources are provided by the ``VidSrc API`` ([https://vidsrc.pro/](https://vidsrc.pro/)).
 
