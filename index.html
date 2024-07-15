@@ -377,7 +377,7 @@
             console.error('Error fetching seasons from TMDB: ' + error);
         }
 
-        const footer = createFooter(false, () => selectRandomSeason(seasonData));
+        const footer = createFooter(false, () => selectRandomSeason(seasonData), false);
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
@@ -448,13 +448,13 @@
             console.error('Error fetching episodes from TMDB: ' + error);
         }
 
-        const footer = createFooter(false, () => selectRandomEpisode(seasonData.episodes));
+        const footer = createFooter(false, () => selectRandomEpisode(seasonData.episodes), false);
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
     }
 
-    function createFooter(isMainPage, randomFunction) {
+    function createFooter(isMainPage, randomFunction, isFinalPage = false) {
         const footer = document.createElement('div');
         footer.classList.add('footer');
 
@@ -479,7 +479,7 @@
             footer.appendChild(randomButton);
         }
 
-        if (!isMainPage) {
+        if (isFinalPage) {
             const infoButton = document.createElement('div');
             infoButton.classList.add('info-button');
             infoButton.innerHTML = '🔗';
@@ -527,7 +527,7 @@
         iframe.allowFullscreen = true;
         promptBox.appendChild(iframe);
 
-        const footer = createFooter(false);
+        const footer = createFooter(false, null, true); // Indicate it's the final page
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
