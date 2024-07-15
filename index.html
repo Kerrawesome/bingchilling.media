@@ -118,6 +118,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
         }
 
         .footer a {
@@ -135,6 +138,7 @@
         .footer-text {
             text-align: center;
             flex-grow: 1;
+            padding: 0 10px; /* Adjust padding to ensure buttons are square */
         }
         
         .back-button, .random-button {
@@ -142,14 +146,13 @@
             align-items: center;
             justify-content: center;
             width: 50px;
-            height: 40px;
+            height: 50px;
             border-radius: 10px;
             background-color: #e68a00;
             color: #ffffff;
             font-size: 22px;
             cursor: pointer;
             transition: background-color 0.3s;
-            padding-bottom: 2px;
         }
 
         .random-button {
@@ -207,6 +210,7 @@
         input.placeholder = 'Search 🔍';
         input.addEventListener('input', function() {
             document.getElementById('ice-cream-logo').style.display = 'none';
+            document.querySelector('.footer').style.display = 'none'; // Hide footer on search
             debounce(searchSuggestions, 300);
         });
         promptBox.appendChild(input);
@@ -241,6 +245,8 @@
             }
         } else {
             clearResults();
+            document.getElementById('ice-cream-logo').style.display = 'block';
+            document.querySelector('.footer').style.display = 'flex'; // Show footer when search is cleared
         }
     }
 
