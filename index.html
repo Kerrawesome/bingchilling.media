@@ -116,7 +116,7 @@
             color: #bbb;
             text-align: center;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
         }
 
@@ -124,7 +124,7 @@
             color: #6200ee;
             text-decoration: none;
         }
-		
+        
         .centered-image {
             width: 100px;
             height: auto;
@@ -136,8 +136,8 @@
             text-align: center;
             flex-grow: 1;
         }
-		
-		.back-button {
+        
+        .back-button, .random-button {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -149,8 +149,13 @@
             font-size: 22px;
             cursor: pointer;
             transition: background-color 0.3s;
-			padding-bottom: 2px;
+            padding-bottom: 2px;
         }
+
+        .random-button {
+            margin-left: 10px;
+        }
+
     </style>
 
     <script>
@@ -304,7 +309,7 @@
         promptBox.id = 'season-selection-box';
 
         const headingText = document.createElement('h2');
-        headingText.textContent = 'Select Season'
+        headingText.textContent = 'Select Season';
         headingText.style.fontSize = '30px';
         headingText.style.marginBottom = '10px';
         headingText.style.whiteSpace = 'pre-line';
@@ -314,6 +319,7 @@
         seasonList.classList.add('season-list');
         promptBox.appendChild(seasonList);
 
+        let seasonData;
         try {
             let response = await fetch('https://api.themoviedb.org/3/tv/' + tmdbId + '?language=en-US', {
                 method: 'GET',
@@ -323,7 +329,8 @@
                 }
             });
             let data = await response.json();
-            data.seasons.filter(season => season.season_number !== 0).forEach(season => {
+            seasonData = data.seasons.filter(season => season.season_number !== 0);
+            seasonData.forEach(season => {
                 const seasonItem = document.createElement('div');
                 seasonItem.classList.add('season-item');
                 seasonItem.onclick = function() {
@@ -357,7 +364,7 @@
             console.error('Error fetching seasons from TMDB: ' + error);
         }
 
-        const footer = createFooter(() => createInitialPrompt());
+        const footer = createFooter(() => createInitialPrompt(), () => selectRandomSeason(seasonData));
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
@@ -383,6 +390,7 @@
         episodeList.classList.add('episode-list');
         promptBox.appendChild(episodeList);
 
+        let seasonData;
         try {
             let response = await fetch('https://api.themoviedb.org/3/tv/' + tmdbId + '/season/' + seasonNumber + '?language=en-US', {
                 method: 'GET',
@@ -392,6 +400,7 @@
                 }
             });
             let data = await response.json();
+            seasonData = data;
             data.episodes.forEach(episode => {
                 const episodeItem = document.createElement('div');
                 episodeItem.classList.add('episode-item');
@@ -424,13 +433,13 @@
             console.error('Error fetching episodes from TMDB: ' + error);
         }
 
-        const footer = createFooter(() => createInitialPrompt());
+        const footer = createFooter(() => showSeasonSelectionPrompt(tmdbId, showName), () => selectRandomEpisode(seasonData.episodes));
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
     }
 
-	function createFooter(backFunction) {
+    function createFooter(backFunction, randomFunction) {
         const footer = document.createElement('div');
         footer.classList.add('footer');
 
@@ -447,7 +456,27 @@
         disclaimer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br><strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
         footer.appendChild(disclaimer);
 
+        if (randomFunction) {
+            const randomButton = document.createElement('div');
+            randomButton.classList.add('random-button');
+            randomButton.innerHTML = '🎲';
+            randomButton.onclick = randomFunction;
+            footer.appendChild(randomButton);
+        }
+
         return footer;
+    }
+
+    function selectRandomSeason(seasons) {
+        const randomSeason = seasons[Math.floor(Math.random() * seasons.length)];
+        seasonNumber = randomSeason.season_number;
+        showEpisodeSelectionPrompt(tmdbId, seasonNumber);
+    }
+
+    function selectRandomEpisode(episodes) {
+        const randomEpisode = episodes[Math.floor(Math.random() * episodes.length)];
+        episodeNumber = randomEpisode.episode_number;
+        showEmbeddedVidSrc();
     }
 
     function showEmbeddedVidSrc() {
@@ -461,15 +490,18 @@
 
         const iframe = document.createElement('iframe');
         if (isTvShow) {
-            iframe.src = `https://binge.lol/watch/tv/${tmdbId}?season=${seasonNumber}&ep=${episodeNumber}`;
+            iframe.src = `https://binge.lol/watch/tv/${tmdbId}?season=${seasonNumber}&ep=${episodeNumber}` ;
         } else {
             iframe.src = `https://binge.lol/watch/movie/${tmdbId}`;
         }
         
 		iframe.style.width = '100%';
-        iframe.style.height = 'calc(100vh - 150px)';
-        iframe.style.border = 'none';
-        iframe.style.borderRadius = '10px';
+		iframe.style.height = 'calc(100vh - 150px)';
+		iframe.style.border = 'none';
+		iframe.style.borderRadius = '10px';
+		iframe.style.clipPath = 'inset(100px 0 0 0 round 10px)';
+		iframe.style.position = 'relative';
+		iframe.style.marginTop = '-100px';
         iframe.allowFullscreen = true;
         promptBox.appendChild(iframe);
 
