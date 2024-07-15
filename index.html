@@ -168,6 +168,7 @@
     let episodeNumber;
     let isTvShow = false;
     let currentPrompt;
+    let isMainPage = true; // Add a flag to indicate the main page
 
     function debounce(callback, delay) {
         clearTimeout(debounceTimer);
@@ -220,7 +221,7 @@
         resultsBox.classList.add('results');
         promptBox.appendChild(resultsBox);
 
-        const footer = createFooter();
+        const footer = createFooter(true); // Indicate it's the main page
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
@@ -314,6 +315,8 @@
         promptBox.classList.add('prompt-box');
         promptBox.id = 'season-selection-box';
 
+        isMainPage = false; // Update flag to indicate it's not the main page
+
         const headingText = document.createElement('h2');
         headingText.textContent = 'Select Season';
         headingText.style.fontSize = '30px';
@@ -370,7 +373,7 @@
             console.error('Error fetching seasons from TMDB: ' + error);
         }
 
-        const footer = createFooter(() => createInitialPrompt(), () => selectRandomSeason(seasonData));
+        const footer = createFooter(false, () => selectRandomSeason(seasonData));
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
@@ -384,6 +387,8 @@
         const promptBox = document.createElement('div');
         promptBox.classList.add('prompt-box');
         promptBox.id = 'episode-selection-box';
+
+        isMainPage = false; // Update flag to indicate it's not the main page
 
         const headingText = document.createElement('h2');
         headingText.textContent = 'Select Episode | Season ' + seasonNumber;
@@ -439,27 +444,27 @@
             console.error('Error fetching episodes from TMDB: ' + error);
         }
 
-        const footer = createFooter(() => showSeasonSelectionPrompt(tmdbId, showName), () => selectRandomEpisode(seasonData.episodes));
+        const footer = createFooter(false, () => selectRandomEpisode(seasonData.episodes));
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
     }
 
-    function createFooter(backFunction, randomFunction) {
+    function createFooter(isMainPage, randomFunction) {
         const footer = document.createElement('div');
         footer.classList.add('footer');
 
-        if (backFunction) {
+        if (!isMainPage) {
             const backButton = document.createElement('div');
             backButton.classList.add('back-button');
             backButton.innerHTML = '🔍';
-            backButton.onclick = backFunction;
+            backButton.onclick = () => createInitialPrompt();
             footer.appendChild(backButton);
         }
 
         const disclaimer = document.createElement('div');
         disclaimer.classList.add('footer-text');
-        disclaimer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT<br><strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.';
+        disclaimer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT' + (isMainPage ? '<br><strong>Disclaimer:</strong> Bing Chilling Media does not host any files; it only displays content from third-party providers.' : '');
         footer.appendChild(disclaimer);
 
         if (randomFunction) {
@@ -510,7 +515,7 @@
 		iframe.allowFullscreen = true;
         promptBox.appendChild(iframe);
 
-        const footer = createFooter(() => createInitialPrompt());
+        const footer = createFooter(false);
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
