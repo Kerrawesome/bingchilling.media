@@ -311,7 +311,7 @@
         const headingText = document.createElement('h2');
         headingText.textContent = 'Select Season';
         headingText.style.fontSize = '30px';
-        headingText.style.marginBottom = '10px';
+        headingText.style.marginBottom = '20px';
         headingText.style.whiteSpace = 'pre-line';
         promptBox.appendChild(headingText);
 
@@ -382,7 +382,7 @@
         const headingText = document.createElement('h2');
         headingText.textContent = 'Select Episode | Season ' + seasonNumber;
         headingText.style.fontSize = '30px';
-        headingText.style.marginBottom = '10px';
+        headingText.style.marginBottom = '20px';
         headingText.style.whiteSpace = 'pre-line';
         promptBox.appendChild(headingText);
 
@@ -446,7 +446,7 @@
         if (backFunction) {
             const backButton = document.createElement('div');
             backButton.classList.add('back-button');
-            backButton.innerHTML = '←';
+            backButton.innerHTML = '🔍';
             backButton.onclick = backFunction;
             footer.appendChild(backButton);
         }
@@ -496,13 +496,12 @@
         }
         
 		iframe.style.width = '100%';
-		iframe.style.height = 'calc(100vh - 150px)';
+		iframe.style.height = 'calc(100vh - 150px + 120px)';
 		iframe.style.border = 'none';
-		iframe.style.borderRadius = '10px';
-		iframe.style.clipPath = 'inset(100px 0 0 0 round 10px)';
 		iframe.style.position = 'relative';
-		iframe.style.marginTop = '-100px';
-        iframe.allowFullscreen = true;
+		iframe.style.marginTop = '-120px';
+		iframe.style.borderRadius = '10px';
+		iframe.allowFullscreen = true;
         promptBox.appendChild(iframe);
 
         const footer = createFooter(() => createInitialPrompt());
