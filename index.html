@@ -141,7 +141,7 @@
             padding: 0 10px; /* Adjust padding to ensure buttons are square */
         }
         
-        .back-button, .random-button {
+        .back-button, .random-button, .info-button {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -156,6 +156,10 @@
         }
 
         .random-button {
+            margin-left: 10px;
+        }
+
+        .info-button {
             margin-left: 10px;
         }
 
@@ -457,7 +461,7 @@
         if (!isMainPage) {
             const backButton = document.createElement('div');
             backButton.classList.add('back-button');
-            backButton.innerHTML = '🔍';
+            backButton.innerHTML = '✨';
             backButton.onclick = () => createInitialPrompt();
             footer.appendChild(backButton);
         }
@@ -473,6 +477,14 @@
             randomButton.innerHTML = '🎲';
             randomButton.onclick = randomFunction;
             footer.appendChild(randomButton);
+        }
+
+        if (!isMainPage) {
+            const infoButton = document.createElement('div');
+            infoButton.classList.add('info-button');
+            infoButton.innerHTML = '🔗';
+            infoButton.onclick = () => window.open('https://github.com/Kerrawesome/bingchilling.client', '_blank');
+            footer.appendChild(infoButton);
         }
 
         return footer;
@@ -506,13 +518,13 @@
             iframe.src = `https://binge.lol/watch/movie/${tmdbId}`;
         }
         
-		iframe.style.width = '100%';
-		iframe.style.height = 'calc(90vh - 150px + 120px)';
-		iframe.style.border = 'none';
-		iframe.style.position = 'relative';
-		iframe.style.marginTop = '-120px';
-		iframe.style.borderRadius = '10px';
-		iframe.allowFullscreen = true;
+        iframe.style.width = '100%';
+        iframe.style.height = 'calc(90vh - 150px + 120px)';
+        iframe.style.border = 'none';
+        iframe.style.position = 'relative';
+        iframe.style.marginTop = '-120px';
+        iframe.style.borderRadius = '10px';
+        iframe.allowFullscreen = true;
         promptBox.appendChild(iframe);
 
         const footer = createFooter(false);
