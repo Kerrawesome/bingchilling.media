@@ -1,7 +1,7 @@
 # Bing Chilling Media
 A simple HTML site providing a quality ad-free entertainment experience.
 
-Bing Chilling Media uses the official [TMDB API](https://developer.themoviedb.org/) to provide listings, and media sources are provided by the [VidSrc API](https://vidsrc.pro/).
+Bing Chilling Media uses the official [TMDB API](https://developer.themoviedb.org/) to provide listings, and media sources are provided by the [VidSrc API](https://vidsrc.pro/) and [sudo-flix](https://sudo-flix.lol/).
 
 >[!NOTE]
 >Please use the current release:<br>
