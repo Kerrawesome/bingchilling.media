@@ -55,12 +55,12 @@
         }
 
         button {
-            margin: 5px;
-            padding: 10px 20px;
-            font-size: 10px;
+            padding: 10px;
+            margin-left: 2px;
+            font-size: 16px;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             background-color: #e68a00;
             color: #ffffff;
             transition: background-color 0.3s;
@@ -141,7 +141,7 @@
             padding: 0 10px; /* Adjust padding to ensure buttons are square */
         }
         
-        .back-button, .random-button, .info-button {
+        .back-button, .random-button, .info-button, .sudo-flix-button {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -155,13 +155,20 @@
             transition: background-color 0.3s;
         }
 
-        .random-button {
+        .random-button, .info-button, .sudo-flix-button {
             margin-left: 10px;
         }
 
-        .info-button {
-            margin-left: 10px;
-        }
+		.sudo-flix-button img {
+			padding-top: 5px;
+			width: 30px; 
+			border-radius: 5px;
+		}
+
+		.sudo-flix-button:hover {
+			background-color: #cc6f00;
+		}
+
 
     </style>
 
@@ -173,6 +180,7 @@
     let isTvShow = false;
     let currentPrompt;
     let isMainPage = true; // Add a flag to indicate the main page
+    let showName;
 
     function debounce(callback, delay) {
         clearTimeout(debounceTimer);
@@ -205,9 +213,15 @@
         promptBox.appendChild(headingText);
 
         const promptText = document.createElement('p');
-        promptText.textContent = 'Choose your movie or TV show.';
+        promptText.innerHTML = 'Choose your movie or TV show; or <button id="mediaButton">Stream Live</button>';
         promptText.style.color = '#ff9800';
         promptBox.appendChild(promptText);
+
+        document.body.appendChild(promptBox);
+
+        document.getElementById('mediaButton').onclick = function() {
+            window.location.href = 'https://bingchillingstream.pages.dev';
+        };
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -274,6 +288,7 @@
                 resultItem.onclick = function() {
                     tmdbId = result.id;
                     isTvShow = result.media_type === 'tv';
+                    showName = name;
                     if (isTvShow) {
                         showSeasonSelectionPrompt(result.id, name);
                     } else {
@@ -480,6 +495,20 @@
         }
 
         if (isFinalPage) {
+            const sudoFlixButton = document.createElement('div');
+            sudoFlixButton.classList.add('sudo-flix-button');
+            sudoFlixButton.innerHTML = '<img src="https://raw.githubusercontent.com/sussy-code/smov/a301ebde5d97c5a8b5dacd119e84a3ec9942f94e/public/android-chrome-512x512.png" alt="Sudo-Flix">';
+            sudoFlixButton.onclick = () => {
+                let url;
+                if (isTvShow) {
+                    url = `https://sudo-flix.lol/media/tmdb-tv-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}/${seasonNumber}/${episodeNumber}`;
+                } else {
+                    url = `https://sudo-flix.lol/media/tmdb-movie-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}`;
+                }
+                window.open(url, '_blank');
+            };
+            footer.appendChild(sudoFlixButton);
+
             const infoButton = document.createElement('div');
             infoButton.classList.add('info-button');
             infoButton.innerHTML = '🔗';
