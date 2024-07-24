@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bing Chilling Stream</title>
+    <link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
+    <script>
+        function setVh() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        window.addEventListener('resize', setVh);
+        window.addEventListener('load', setVh);
+    </script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: calc(var(--vh, 1vh) * 100);
+            background-color: #121212;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            color: #ffffff;
+            overflow-y: auto;
+        }
+
+        .prompt-box {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 90%;
+            max-height: 90%;
+            position: relative;
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2e2e2e;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            margin-left: 2px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            background-color: #e68a00;
+            color: #ffffff;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #cc6f00;
+        }
+
+        .selected-button {
+            background-color: #cc6f00;
+        }
+
+        img {
+            max-width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .results-container {
+            display: flex;
+            width: 100%;
+            max-height: calc(100vh - 300px);
+        }
+
+        .results {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px;
+        }
+
+		.result-item {
+			padding: 10px;
+			background-color: #2e2e2e;
+			border-radius: 10px;
+			text-align: center;
+			cursor: pointer;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			align-items: center;
+			position: relative;
+		}
+
+		.result-item img {
+			width: 80px;
+			height: 80px; 
+			object-fit: contain; 
+			border-radius: 10px; 
+		}
+
+        .item-info h3 {
+            margin: 0;
+            font-size: 14px;
+            padding-top: 5px;
+            font-weight: bold;
+            word-wrap: break-word;
+        }
+
+        .item-info p {
+            margin: 5px 0 0;
+            font-size: 12px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #bbb;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .footer a {
+            color: #6200ee;
+            text-decoration: none;
+        }
+
+        .centered-image {
+            width: 100px;
+            height: auto;
+            margin-bottom: -10px;
+            margin-top: 0px;
+        }
+
+        .footer-text {
+            text-align: center;
+            flex-grow: 1;
+            padding: 0 10px;
+        }
+
+        .back-button, .info-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background-color: #e68a00;
+            color: #ffffff;
+            font-size: 22px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .info-button {
+            margin-left: 10px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 ratio */
+            height: 0;
+            margin: auto;
+        }
+
+        .audio-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 10px;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        .audio-container img {
+	    width: 100%;
+	    height: auto;
+	    max-width: 100px;
+	    margin-bottom: 10px;
+	    border-radius: 10px;
+	    object-fit: cover;
+	}
+
+        .audio-player-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .audio-container audio {
+            width: 100%;
+            height: 50px;
+            margin-top: 20px;
+            outline: none;
+        }
+
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .iframe-container {
+            position: relative;
+            width: 90%;
+            height: calc(70vh);
+            margin: auto;
+        }
+
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+	    border-radius: 10px;
+        }
+    </style>
+
+    <script>
+        let debounceTimer;
+        let currentPrompt;
+
+        function debounce(callback, delay) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(callback, delay);
+        }
+
+        function createInitialPrompt() {
+            if (currentPrompt) {
+                document.getElementById(currentPrompt).remove();
+            }
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'initial-prompt-box';
+
+            currentPrompt = 'initial-prompt-box';
+
+            const image = document.createElement('img');
+            image.src = 'https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png';
+            image.alt = 'Ice Cream';
+            image.classList.add('centered-image');
+            image.id = 'ice-cream-logo';
+            promptBox.appendChild(image);
+
+            const headingText = document.createElement('h1');
+            headingText.textContent = 'Bing Chilling Stream';
+            headingText.style.fontSize = '30px';
+            headingText.style.marginBottom = '20px';
+            headingText.style.color = '#ffffff';
+            promptBox.appendChild(headingText);
+
+            const promptText = document.createElement('p');
+            promptText.innerHTML = 'Stream live or choose your <button id="mediaButton">media</button>';
+            promptText.style.color = '#ff9800';
+            promptBox.appendChild(promptText);
+
+            document.body.appendChild(promptBox);
+
+            document.getElementById('mediaButton').onclick = function() {
+                window.location.href = 'index.html';
+            };
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'stream-query';
+            input.placeholder = 'Search 🔍';
+            input.addEventListener('focus', function() {
+                document.getElementById('ice-cream-logo').style.display = 'none';
+                document.querySelector('.footer').style.display = 'none';
+                loadListings();
+            });
+            input.addEventListener('input', function() {
+                debounce(searchListings, 300);
+            });
+            promptBox.appendChild(input);
+
+            const resultsContainer = document.createElement('div');
+            resultsContainer.classList.add('results-container');
+
+            const tvResultsBox = document.createElement('div');
+            tvResultsBox.id = 'tv-results-box';
+            tvResultsBox.classList.add('results');
+            resultsContainer.appendChild(tvResultsBox);
+
+            const radioResultsBox = document.createElement('div');
+            radioResultsBox.id = 'radio-results-box';
+            radioResultsBox.classList.add('results');
+            resultsContainer.appendChild(radioResultsBox);
+
+            promptBox.appendChild(resultsContainer);
+
+            const footer = createFooter(true);
+            promptBox.appendChild(footer);
+
+            document.body.appendChild(promptBox);
+        }
+
+        async function loadListings() {
+            const [tvResponse, radioResponse] = await Promise.all([
+                fetch('https://i.mjh.nz/nz/raw-tv.m3u8'),
+                fetch('https://i.mjh.nz/nz/raw-radio.m3u8')
+            ]);
+
+            const [tvData, radioData] = await Promise.all([
+                tvResponse.text(),
+                radioResponse.text()
+            ]);
+
+            displayListings(tvData, radioData);
+        }
+
+        function searchListings() {
+            const query = document.getElementById('stream-query').value.toLowerCase();
+            Promise.all([
+                fetch('https://i.mjh.nz/nz/raw-tv.m3u8').then(response => response.text()),
+                fetch('https://i.mjh.nz/nz/raw-radio.m3u8').then(response => response.text())
+            ])
+            .then(([tvData, radioData]) => {
+                displayListings(tvData, radioData, query);
+            })
+            .catch(error => {
+                console.error('Error fetching listings: ' + error);
+            });
+        }
+
+        function displayListings(tvData, radioData, query = '') {
+            const tvLines = tvData.split('\n');
+            const radioLines = radioData.split('\n');
+            const tvResults = [];
+            const radioResults = [];
+            let currentItem = {};
+
+            // Add Freeview TV Guide at the beginning
+            tvResults.push({
+                name: 'TV Guide',
+                logo: 'https://freeviewnz.tv/media/1961/freeview_brandrefresh_graphic.png',
+                url: 'https://freeviewnz.tv/tvguide/whats-on/?st=streaming'
+            });
+
+            tvLines.forEach(line => {
+                if (line.startsWith('#EXTINF')) {
+                    const channelInfo = line.match(/tvg-logo="([^"]+)"/);
+                    currentItem = {
+                        name: line.split(',')[1],
+                        logo: channelInfo ? channelInfo[1] : ''
+                    };
+                } else if (line.startsWith('http')) {
+                    currentItem.url = line;
+                    if (query && !currentItem.name.toLowerCase().includes(query)) {
+                        return;
+                    }
+                    if (!currentItem.name.toLowerCase().includes('mjh-discovery')) {
+                        tvResults.push(currentItem);
+                    }
+                }
+            });
+
+            // Add mjh-discovery channels at the end
+            tvLines.forEach(line => {
+                if (line.startsWith('#EXTINF')) {
+                    const channelInfo = line.match(/tvg-logo="([^"]+)"/);
+                    currentItem = {
+                        name: line.split(',')[1],
+                        logo: channelInfo ? channelInfo[1] : ''
+                    };
+                } else if (line.startsWith('http')) {
+                    currentItem.url = line;
+                    if (query && !currentItem.name.toLowerCase().includes(query)) {
+                        return;
+                    }
+                    if (currentItem.name.toLowerCase().includes('mjh-discovery')) {
+                        tvResults.push(currentItem);
+                    }
+                }
+            });
+
+            // Add Random Station button to the radio category
+            radioResults.push({
+                name: 'Random Station',
+                logo: 'https://em-content.zobj.net/source/microsoft/379/game-die_1f3b2.png',
+                url: ''
+            });
+
+            radioLines.forEach(line => {
+                if (line.startsWith('#EXTINF')) {
+                    const channelInfo = line.match(/tvg-logo="([^"]+)"/);
+                    currentItem = {
+                        name: line.split(',')[1],
+                        logo: channelInfo ? channelInfo[1] : ''
+                    };
+                } else if (line.startsWith('http')) {
+                    currentItem.url = line;
+                    if (query && !currentItem.name.toLowerCase().includes(query)) {
+                        return;
+                    }
+                    radioResults.push(currentItem);
+                }
+            });
+
+            const tvResultsBox = document.getElementById('tv-results-box');
+            const radioResultsBox = document.getElementById('radio-results-box');
+            tvResultsBox.innerHTML = '';
+            radioResultsBox.innerHTML = '';
+
+            tvResults.forEach(result => {
+                const item = createResultItem(result, 'video');
+                tvResultsBox.appendChild(item);
+            });
+
+            radioResults.forEach(result => {
+                const item = createResultItem(result, 'audio');
+                radioResultsBox.appendChild(item);
+            });
+        }
+
+        function createResultItem(result, type) {
+            const resultItem = document.createElement('div');
+            resultItem.classList.add('result-item');
+            if (result.name === 'TV Guide') {
+                resultItem.classList.add('tv-guide');
+            }
+            resultItem.onclick = function() {
+                if (result.name === 'TV Guide') {
+                    showEmbeddedIframe(result.url);
+                } else if (result.name === 'Random Station') {
+                    playRandomStation();
+                } else if (type === 'video') {
+                    showEmbeddedStream(result.url);
+                } else {
+                    playAudioStream(result.url, result.logo);
+                }
+            };
+
+            if (result.logo) {
+                const resultImage = document.createElement('img');
+                resultImage.src = result.logo;
+                resultItem.appendChild(resultImage);
+            }
+
+            const resultInfo = document.createElement('div');
+            resultInfo.classList.add('item-info');
+
+            const resultTitle = document.createElement('h3');
+            resultTitle.textContent = result.name;
+            resultInfo.appendChild(resultTitle);
+
+            resultItem.appendChild(resultInfo);
+
+            return resultItem;
+        }
+
+        function playRandomStation() {
+            fetch('https://i.mjh.nz/nz/raw-radio.m3u8')
+                .then(response => response.text())
+                .then(data => {
+                    const lines = data.split('\n');
+                    const stations = [];
+                    let currentItem = {};
+
+                    lines.forEach(line => {
+                        if (line.startsWith('#EXTINF')) {
+                            const channelInfo = line.match(/tvg-logo="([^"]+)"/);
+                            currentItem = {
+                                name: line.split(',')[1],
+                                logo: channelInfo ? channelInfo[1] : ''
+                            };
+                        } else if (line.startsWith('http')) {
+                            currentItem.url = line;
+                            stations.push(currentItem);
+                        }
+                    });
+
+                    const randomStation = stations[Math.floor(Math.random() * stations.length)];
+                    playAudioStream(randomStation.url, randomStation.logo);
+                })
+                .catch(error => {
+                    console.error('Error fetching radio stations: ' + error);
+                });
+        }
+
+        function showEmbeddedStream(streamUrl) {
+            const previousPromptId = currentPrompt;
+            currentPrompt = 'embed-prompt-box';
+            document.getElementById(previousPromptId).remove();
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'embed-prompt-box';
+
+            const videoContainer = document.createElement('div');
+            videoContainer.classList.add('video-container');
+
+            const video = document.createElement('video');
+            video.id = 'video';
+            video.controls = true;
+            videoContainer.appendChild(video);
+
+            promptBox.appendChild(videoContainer);
+
+            const script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/npm/hls.js@latest";
+            script.onload = function() {
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+                        hls.loadSource(streamUrl);
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = streamUrl;
+                }
+                video.play();
+            };
+            promptBox.appendChild(script);
+
+            const footer = createFooter(false, null, true);
+            promptBox.appendChild(footer);
+
+            document.body.appendChild(promptBox);
+        }
+
+        function playAudioStream(streamUrl, logoUrl) {
+            const previousPromptId = currentPrompt;
+            currentPrompt = 'audio-prompt-box';
+            document.getElementById(previousPromptId).remove();
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'audio-prompt-box';
+
+            const audioContainer = document.createElement('div');
+            audioContainer.classList.add('audio-container');
+
+            if (logoUrl) {
+                const logoImage = document.createElement('img');
+                logoImage.src = logoUrl;
+                logoImage.style.maxWidth = '20%';
+                logoImage.style.marginBottom = '10px';
+                logoImage.style.borderRadius = '10px';
+                audioContainer.appendChild(logoImage);
+            }
+
+            const audio = document.createElement('audio');
+            audio.id = 'audioPlayer';
+            audio.controls = true;
+            audio.src = streamUrl;
+            audioContainer.appendChild(audio);
+
+            promptBox.appendChild(audioContainer);
+
+            const footer = createFooter(false, null, true);
+            promptBox.appendChild(footer);
+
+            document.body.appendChild(promptBox);
+
+            audio.play();
+        }
+
+        function showEmbeddedIframe(url) {
+            const previousPromptId = currentPrompt;
+            currentPrompt = 'iframe-prompt-box';
+            document.getElementById(previousPromptId).remove();
+
+            const promptBox = document.createElement('div');
+            promptBox.classList.add('prompt-box');
+            promptBox.id = 'iframe-prompt-box';
+
+            const iframeContainer = document.createElement('div');
+            iframeContainer.classList.add('iframe-container');
+
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframeContainer.appendChild(iframe);
+
+            promptBox.appendChild(iframeContainer);
+
+            const footer = createFooter(false, null, true);
+            promptBox.appendChild(footer);
+
+            document.body.appendChild(promptBox);
+        }
+
+        function createFooter(isMainPage, randomFunction, isFinalPage = false) {
+            const footer = document.createElement('div');
+            footer.classList.add('footer');
+
+            if (!isMainPage) {
+                const backButton = document.createElement('div');
+                backButton.classList.add('back-button');
+                backButton.innerHTML = '✨';
+                backButton.onclick = () => createInitialPrompt();
+                footer.appendChild(backButton);
+            }
+
+            const disclaimer = document.createElement('div');
+            disclaimer.classList.add('footer-text');
+            disclaimer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT';
+            footer.appendChild(disclaimer);
+
+            if (isFinalPage) {
+                const infoButton = document.createElement('div');
+                infoButton.classList.add('info-button');
+                infoButton.innerHTML = '🔗';
+                infoButton.onclick = () => window.open('https://github.com/Kerrawesome/bingchilling.media', '_blank');
+                footer.appendChild(infoButton);
+            }
+
+            return footer;
+        }
+
+        window.onload = function() {
+            setVh();
+            createInitialPrompt();
+        };
+    </script>
+</head>
+<body>
+</body>
+</html>
