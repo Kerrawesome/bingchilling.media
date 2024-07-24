@@ -10,6 +10,7 @@ The television guide is provided by [Freeview NZ](https://freeviewnz.tv/tvguide/
 >Please use the current release:<br>
 [https://bingchilling.pages.dev/](https://bingchilling.pages.dev/)
 
-**Bing Chilling Media does not host any media or streams, or endorse piracy; all content displayed is provided by third-party providers. Any complaints or DMCA issues should be raised directly with the media or stream providers.**
+**Bing Chilling Media does not host any media or streams, or endorse piracy; all content displayed is provided by third-party providers.
+Any complaints or DMCA issues should be raised directly with the media or stream providers.**
 
 
