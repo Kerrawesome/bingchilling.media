@@ -213,14 +213,18 @@
         promptBox.appendChild(headingText);
 
         const promptText = document.createElement('p');
-        promptText.innerHTML = 'Choose your movie/show or <button id="mediaButton">stream</button>';
+        promptText.innerHTML = 'Watch, <button id="streamButton">stream</button> or <button id="readButton">read</button>';
         promptText.style.color = '#ff9800';
         promptBox.appendChild(promptText);
 
         document.body.appendChild(promptBox);
 
-        document.getElementById('mediaButton').onclick = function() {
+        document.getElementById('streamButton').onclick = function() {
             window.location.href = 'broadcast.html';
+        };
+
+        document.getElementById('readButton').onclick = function() {
+            window.location.href = 'print.html';
         };
 
         const input = document.createElement('input');
