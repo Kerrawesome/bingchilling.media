@@ -107,6 +107,7 @@
         }
 
         let currentPrompt;
+        let currentIssueId; // Declare currentIssueId globally to update it in the date picker
 
         function createInitialPrompt() {
             if (currentPrompt) {
@@ -256,7 +257,7 @@
 
             const currentDate = getCurrentDate();
             const latestEditionDate = getLatestEditionDate(currentDate, newspaperCode);
-            const currentIssueId = getIssueIdForDate(newspaperCode, latestEditionDate);
+            currentIssueId = getIssueIdForDate(newspaperCode, latestEditionDate);
             loadPage(currentIssueId, 1, aspectRatio);
 
             // Initialize Air Datepicker
@@ -284,8 +285,8 @@
                     return disabledDates.some(disabledDate => dateFns.isEqual(date, disabledDate));
                 },
                 onSelect({date}) {
-                    const selectedIssueId = getIssueIdForDate(newspaperCode, date);
-                    loadPage(selectedIssueId, 1, aspectRatio);
+                    currentIssueId = getIssueIdForDate(newspaperCode, date);
+                    loadPage(currentIssueId, 1, aspectRatio);
                     document.getElementById('page-number').value = '1';
                 }
             });
