@@ -237,9 +237,8 @@
 
             const pageNumberInput = document.createElement('input');
             pageNumberInput.id = 'page-number';
-            pageNumberInput.type = 'number';
-            pageNumberInput.value = 1;
-            pageNumberInput.min = 1;
+            pageNumberInput.type = 'text';
+            pageNumberInput.value = '1';
             pageNumberInput.onchange = () => loadPageForCurrentIssue();
             navButtons.appendChild(pageNumberInput);
 
@@ -287,21 +286,21 @@
                 onSelect({date}) {
                     const selectedIssueId = getIssueIdForDate(newspaperCode, date);
                     loadPage(selectedIssueId, 1, aspectRatio);
-                    document.getElementById('page-number').value = 1;
+                    document.getElementById('page-number').value = '1';
                 }
             });
 
             function navigatePage(offset) {
-                const pageNumber = parseInt(pageNumberInput.value) + offset;
-                if (pageNumber > 0 && pageNumber <= pageNumberInput.max) {
+                const pageNumber = parseInt(pageNumberInput.value.split('/')[0]) + offset;
+                if (pageNumber > 0 && pageNumber <= parseInt(pageNumberInput.max)) {
                     loadPage(currentIssueId, pageNumber, aspectRatio);
-                    pageNumberInput.value = pageNumber;
+                    pageNumberInput.value = `${pageNumber}/${pageNumberInput.max}`;
                 }
             }
 
             function loadPageForCurrentIssue() {
-                const pageNumber = parseInt(pageNumberInput.value);
-                if (pageNumber > 0 && pageNumber <= pageNumberInput.max) {
+                const pageNumber = parseInt(pageNumberInput.value.split('/')[0]);
+                if (pageNumber > 0 && pageNumber <= parseInt(pageNumberInput.max)) {
                     loadPage(currentIssueId, pageNumber, aspectRatio);
                 }
             }
@@ -318,6 +317,7 @@
                     img.src = pageUrl;
                     img.style.aspectRatio = aspectRatio;
                     document.getElementById('page-number').max = data.PageKeys.length;
+                    document.getElementById('page-number').value = `${pageNumber}/${data.PageKeys.length}`;
                 })
                 .catch(error => console.error('Error fetching page key:', error));
         }
@@ -512,7 +512,7 @@
         }
 
         .navigation-buttons input {
-            width: 50px;
+            width: 70px;
 			height: 40px;
             text-align: center;
             font-size: 16px;
