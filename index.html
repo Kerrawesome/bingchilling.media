@@ -159,17 +159,15 @@
             margin-left: 10px;
         }
 
-		.sudo-flix-button img {
-			padding-top: 5px;
-			width: 30px; 
-			border-radius: 5px;
-		}
+        .sudo-flix-button img {
+            padding-top: 5px;
+            width: 30px; 
+            border-radius: 5px;
+        }
 
-		.sudo-flix-button:hover {
-			background-color: #cc6f00;
-		}
-
-
+        .sudo-flix-button:hover {
+            background-color: #cc6f00;
+        }
     </style>
 
     <script>
@@ -181,6 +179,8 @@
     let currentPrompt;
     let isMainPage = true; // Add a flag to indicate the main page
     let showName;
+    let seasonId;
+    let episodeId;
 
     function debounce(callback, delay) {
         clearTimeout(debounceTimer);
@@ -363,6 +363,7 @@
                 seasonItem.classList.add('season-item');
                 seasonItem.onclick = function() {
                     seasonNumber = season.season_number;
+                    seasonId = season.id; // Store season ID
                     showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName);
                 };
 
@@ -436,6 +437,7 @@
                 episodeItem.classList.add('episode-item');
                 episodeItem.onclick = function() {
                     episodeNumber = episode.episode_number;
+                    episodeId = episode.id; // Store episode ID
                     showEmbeddedVidSrc();
                 };
 
@@ -501,7 +503,7 @@
             sudoFlixButton.onclick = () => {
                 let url;
                 if (isTvShow) {
-                    url = `https://sudo-flix.lol/media/tmdb-tv-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}/${seasonNumber}/${episodeNumber}`;
+                    url = `https://sudo-flix.lol/media/tmdb-tv-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}/${seasonId}/${episodeId}`;
                 } else {
                     url = `https://sudo-flix.lol/media/tmdb-movie-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}`;
                 }
@@ -522,12 +524,14 @@
     function selectRandomSeason(seasons) {
         const randomSeason = seasons[Math.floor(Math.random() * seasons.length)];
         seasonNumber = randomSeason.season_number;
+        seasonId = randomSeason.id; // Store random season ID
         showEpisodeSelectionPrompt(tmdbId, seasonNumber);
     }
 
     function selectRandomEpisode(episodes) {
         const randomEpisode = episodes[Math.floor(Math.random() * episodes.length)];
         episodeNumber = randomEpisode.episode_number;
+        episodeId = randomEpisode.id; // Store random episode ID
         showEmbeddedVidSrc();
     }
 
