@@ -607,6 +607,14 @@
             setVh();
             createInitialPrompt();
         };
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                navigatePage(-1); // Simulates a click on the back button
+            } else if (event.key === 'ArrowRight') {
+                navigatePage(1); // Simulates a click on the forward button
+            }
+    });
     </script>
 </head>
 <body>
