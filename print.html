@@ -609,14 +609,13 @@
         };
 
         document.addEventListener('keydown', function(event) {
-        if (document.activeElement.tagName.toLowerCase() !== 'input') {
             if (event.key === 'ArrowLeft') {
-                navigatePage(-1); // Simulates a click on the back button
+                if (backButton) backButton.click(); // Simulates a click on the back button
             } else if (event.key === 'ArrowRight') {
-                navigatePage(1); // Simulates a click on the forward button
+                if (forwardButton) forwardButton.click(); // Simulates a click on the forward button
             }
-        }
-    });
+        });
+
     </script>
 </head>
 <body>
