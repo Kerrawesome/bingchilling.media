@@ -607,15 +607,6 @@
             setVh();
             createInitialPrompt();
         };
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'ArrowLeft') {
-                if (backButton) backButton.click(); // Simulates a click on the back button
-            } else if (event.key === 'ArrowRight') {
-                if (forwardButton) forwardButton.click(); // Simulates a click on the forward button
-            }
-        });
-
     </script>
 </head>
 <body>
