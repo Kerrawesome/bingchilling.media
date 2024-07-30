@@ -224,6 +224,9 @@
         }
     </style>
     <script>
+        const primaryAccessToken = '_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!';
+        const secondaryAccessToken = 'Jdi_gjVafkgzPbaY17_WSBaHsuZKQNeDBdaLkF2HWzGY7o-JOrpnjQb1aCbq67p7RjHarnytOn_mwztCNPM9z8FhYGOS9VIpLdJhwmvlYyE!';
+
         function setVh() {
             let vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -269,6 +272,14 @@
             return lastSunday;
         }
 
+        function getLatestFirstOfMonth(date) {
+            const latestFirst = new Date(date.getFullYear(), date.getMonth(), 1);
+            if (date.getDate() < 1) {
+                latestFirst.setMonth(latestFirst.getMonth() - 1);
+            }
+            return latestFirst;
+        }
+
         function getIssueIdForDate(newspaperCode, date) {
             const year = date.getFullYear();
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -295,6 +306,8 @@
                 latestDate = getLastSunday(date);
             } else if (code === '1759' && day !== 4) { // Western Leader, Thu
                 latestDate.setDate(date.getDate() - (day < 4 ? day + 3 : day - 4));
+            } else if (code === '9658') { // NZ House & Garden, 1st of each month
+                latestDate = getLatestFirstOfMonth(date);
             }
 
             return latestDate;
@@ -307,9 +320,16 @@
             return minDate;
         }
 
+        function getMinDateForMagazine() {
+            const currentDate = new Date();
+            const minDate = new Date(currentDate);
+            minDate.setMonth(currentDate.getMonth() - 4);
+            return minDate;
+        }
+
         function getDisabledDatesForNewspaper(code) {
             const currentDate = new Date();
-            const minDate = getMinDate();
+            const minDate = code === '9658' ? getMinDateForMagazine() : getMinDate();
             const disabledDates = [];
 
             while (minDate <= currentDate) {
@@ -317,7 +337,8 @@
                 if ((code === '1126' && (day === 0 || day === 6)) || // NZ Herald, Mon-Fri
                     (code === '7478' && day !== 6) || // Weekend Herald, Sat
                     (code === '1211' && day !== 0) || // Herald on Sunday, Sun
-                    (code === '1759' && day !== 4)) { // Western Leader, Thu
+                    (code === '1759' && day !== 4) || // Western Leader, Thu
+                    (code === '9658' && minDate.getDate() !== 1)) { // NZ House & Garden, 1st of each month
                     disabledDates.push(new Date(minDate));
                 }
                 minDate.setDate(minDate.getDate() + 1);
@@ -334,7 +355,8 @@
             '1126': 289, // NZ Herald
             '7478': 211, // Weekend Herald
             '1211': 279, // Herald on Sunday
-            '1759': 227  // Western Leader
+            '1759': 227, // Western Leader
+            '9658': 370  // NZ House & Garden
         };
 
         function createInitialPrompt() {
@@ -381,7 +403,8 @@
                 { name: 'The New Zealand Herald', code: '1126' },
                 { name: 'The Weekend Herald', code: '7478' },
                 { name: 'The Herald on Sunday', code: '1211'},
-                { name: 'Western Leader', code: '1759' }
+                { name: 'Western Leader', code: '1759' },
+                { name: 'NZ House & Garden', code: '9658' }
             ];
 
             newspapers.forEach(newspaper => {
@@ -417,7 +440,8 @@
 
         function fetchFrontPageImage(newspaperCode, date, container) {
             const issueId = getIssueIdForDate(newspaperCode, date);
-            const frontPageUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!&issue=${issueId}`;
+            const accessToken = newspaperCode === '9658' ? secondaryAccessToken : primaryAccessToken;
+            const frontPageUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
 
             fetch(frontPageUrl)
                 .then(response => response.json())
@@ -495,7 +519,7 @@
             loadPage(currentIssueId, 1, aspectRatio);
 
             // Initialize Air Datepicker
-            const minDate = getMinDate();
+            const minDate = newspaperCode === '9658' ? getMinDateForMagazine() : getMinDate();
             const disabledDates = getDisabledDatesForNewspaper(newspaperCode);
 
             new AirDatepicker('#date-picker', {
@@ -551,7 +575,8 @@
         }
 
         function loadPage(issueId, pageNumber, aspectRatio) {
-            const keyUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!&issue=${issueId}`;
+            const accessToken = issueId.startsWith('9658') ? secondaryAccessToken : primaryAccessToken;
+            const keyUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
             fetch(keyUrl)
                 .then(response => response.json())
                 .then(data => {
