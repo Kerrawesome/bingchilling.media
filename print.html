@@ -131,6 +131,9 @@
             width: 100%;
             max-width: 800px;
             margin: auto;
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
         }
 
         .reader-container img {
@@ -246,6 +249,11 @@
             const monthName = months[date.getMonth()];
             const year = date.getFullYear();
             return `${dayName}, ${day} ${monthName} ${year}`;
+        }
+
+        function getDayName(date) {
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            return days[date.getDay()];
         }
 
         function getLastSaturday(date) {
@@ -386,6 +394,10 @@
                 const name = document.createElement('h3');
                 name.textContent = newspaper.name;
                 item.appendChild(name);
+
+                const dayName = document.createElement('p');
+                dayName.textContent = getDayName(latestEditionDate);
+                item.appendChild(dayName);
 
                 const date = document.createElement('p');
                 date.textContent = formatDate(latestEditionDate);
