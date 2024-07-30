@@ -3,8 +3,6 @@
     "short_name": "Bing Chilling",
     "start_url": "index.html",
     "display": "standalone",
-    "background_color": "#1e1e1e",
-    "theme_color": "#e68a00",
     "icons": [
         {
             "src": "https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png",
