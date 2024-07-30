@@ -81,7 +81,7 @@
         .results-container {
             display: flex;
             width: 100%;
-            max-height: calc(100vh - 300px);
+            max-height: calc(100vh - 400px);
         }
 
         .results {
@@ -94,25 +94,25 @@
             padding: 10px;
         }
 
-		.result-item {
-			padding: 10px;
-			background-color: #2e2e2e;
-			border-radius: 10px;
-			text-align: center;
-			cursor: pointer;
-			display: flex;
-			flex-direction: column;
-			justify-content: flex-start;
-			align-items: center;
-			position: relative;
-		}
+        .result-item {
+            padding: 10px;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            position: relative;
+        }
 
-		.result-item img {
-			width: 80px;
-			height: 80px; 
-			object-fit: contain; 
-			border-radius: 10px; 
-		}
+        .result-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
 
         .item-info h3 {
             margin: 0;
@@ -197,13 +197,13 @@
         }
 
         .audio-container img {
-	    width: 100%;
-	    height: auto;
-	    max-width: 100px;
-	    margin-bottom: 10px;
-	    border-radius: 10px;
-	    object-fit: cover;
-	}
+            width: 100%;
+            height: auto;
+            max-width: 100px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
 
         .audio-player-wrapper {
             display: flex;
@@ -240,7 +240,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-	    border-radius: 10px;
+            border-radius: 10px;
         }
     </style>
 
@@ -322,6 +322,9 @@
             promptBox.appendChild(footer);
 
             document.body.appendChild(promptBox);
+
+            // Load the listings initially
+            loadListings();
         }
 
         async function loadListings() {
@@ -366,6 +369,9 @@
                 url: 'https://freeviewnz.tv/tvguide/whats-on/?st=streaming'
             });
 
+            const delayedChannels = [];
+            const tracksideIndex = tvLines.findIndex(line => line.includes('TAB Trackside 2'));
+
             tvLines.forEach(line => {
                 if (line.startsWith('#EXTINF')) {
                     const channelInfo = line.match(/tvg-logo="([^"]+)"/);
@@ -378,29 +384,22 @@
                     if (query && !currentItem.name.toLowerCase().includes(query)) {
                         return;
                     }
-                    if (!currentItem.name.toLowerCase().includes('mjh-discovery')) {
+                    if (currentItem.name.toLowerCase().includes('threenow') || currentItem.name.toLowerCase().includes('tvg-discovery')) {
+                        delayedChannels.push(currentItem);
+                    } else if (currentItem.name.toLowerCase().includes('mjh-discovery')) {
+                        delayedChannels.push(currentItem);
+                    } else {
                         tvResults.push(currentItem);
                     }
                 }
             });
 
-            // Add mjh-discovery channels at the end
-            tvLines.forEach(line => {
-                if (line.startsWith('#EXTINF')) {
-                    const channelInfo = line.match(/tvg-logo="([^"]+)"/);
-                    currentItem = {
-                        name: line.split(',')[1],
-                        logo: channelInfo ? channelInfo[1] : ''
-                    };
-                } else if (line.startsWith('http')) {
-                    currentItem.url = line;
-                    if (query && !currentItem.name.toLowerCase().includes(query)) {
-                        return;
-                    }
-                    if (currentItem.name.toLowerCase().includes('mjh-discovery')) {
-                        tvResults.push(currentItem);
-                    }
-                }
+            // Insert delayed channels after TAB Trackside 2
+            const tracksideChannel = tvResults.find(result => result.name === 'TAB Trackside 2');
+            const tracksideIndexFinal = tracksideChannel ? tvResults.indexOf(tracksideChannel) : tvResults.length;
+
+            delayedChannels.forEach(channel => {
+                tvResults.splice(tracksideIndexFinal + 1, 0, channel);
             });
 
             // Add Random Station button to the radio category
