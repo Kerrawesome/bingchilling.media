@@ -351,7 +351,7 @@
                 else if ((code === '1126' && (day === 0 || day === 6)) || // NZ Herald, Mon-Fri
                     (code === '7478' && day !== 6) || // Weekend Herald, Sat
                     (code === '1211' && day !== 0) || // Herald on Sunday, Sun
-                    (code === '1759' && day !== 4) || // Western Leader, Thu
+                    (code === '1759' && day !== 4) // Western Leader, Thu
 		    {
                     disabledDates.push(new Date(minDate));
                 }
