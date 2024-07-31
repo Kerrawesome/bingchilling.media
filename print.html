@@ -348,7 +348,7 @@
                     (code === '7478' && day !== 6) || // Weekend Herald, Sat
                     (code === '1211' && day !== 0) || // Herald on Sunday, Sun
                     (code === '1759' && day !== 4) || // Western Leader, Thu
-                    (code === '9658')) { // NZ House & Garden, 1st of each month
+		    {
                     disabledDates.push(new Date(minDate));
                 }
                 minDate.setDate(minDate.getDate() + 1);
