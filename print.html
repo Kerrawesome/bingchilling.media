@@ -26,14 +26,11 @@
         }
 
         .prompt-box {
-            background-color: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
             text-align: center;
             width: 90%;
             position: relative;
-            margin-bottom: 20px;
             overflow-y: auto;
         }
 
@@ -224,6 +221,20 @@
         .selected-button {
             background-color: #cc6f00;
         }
+
+        * {
+		  scrollbar-width: none; /* For Firefox */
+		  -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+		}
+
+		*::-webkit-scrollbar {
+		  display: none; /* For WebKit browsers (Chrome, Safari) */
+		}
+		
+		html, body {
+		  height: 100%;
+		  overflow: auto;
+		}
     </style>
     <script>
         const primaryAccessToken = '_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!';
