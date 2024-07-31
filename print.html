@@ -286,9 +286,12 @@
         }
 
         function getLatestFirstOfMonth(date) {
-    const latestFirst = new Date(date.getFullYear(), date.getMonth(), 1);
-    return latestFirst;
-	}
+            const latestFirst = new Date(date.getFullYear(), date.getMonth(), 1);
+            if (date.getDate() < 1) {
+                latestFirst.setMonth(latestFirst.getMonth() - 1);
+            }
+            return latestFirst;
+        }
 
         function getIssueIdForDate(newspaperCode, date) {
             const year = date.getFullYear();
@@ -344,12 +347,11 @@
 
             while (minDate <= currentDate) {
                 const day = minDate.getDay();
-                else if ((code === '1126' && (day === 0 || day === 6)) || // NZ Herald, Mon-Fri
+                if ((code === '1126' && (day === 0 || day === 6)) || // NZ Herald, Mon-Fri
                     (code === '7478' && day !== 6) || // Weekend Herald, Sat
                     (code === '1211' && day !== 0) || // Herald on Sunday, Sun
-                    (code === '1759' && day !== 4) // Western Leader, Thu
-	            (code === '9658' && day !== -1)
-		    {
+                    (code === '1759' && day !== 4) || // Western Leader, Thu
+                    (code === '9658' && minDate.getDate() !== 1)) { // NZ House & Garden, 1st of each month
                     disabledDates.push(new Date(minDate));
                 }
                 minDate.setDate(minDate.getDate() + 1);
