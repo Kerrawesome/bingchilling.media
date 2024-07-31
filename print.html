@@ -301,7 +301,7 @@
             const now = new Date();
             const nzOffset = 12 * 60 * 60 * 1000; // NZ is UTC+12
             const nzTime = new Date(now.getTime() + nzOffset);
-            return nzTime.getHours() > 1 || (nzTime.getHours() === 1 && nzTime.getMinutes() >= 30);
+            return nzTime.getHours() > 0 || (nzTime.getHours() === 0 && nzTime.getMinutes() >= 20);
         }
 
         function getLatestEditionDate(date, code) {
