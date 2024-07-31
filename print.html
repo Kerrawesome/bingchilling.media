@@ -287,9 +287,6 @@
 
         function getLatestFirstOfMonth(date) {
             const latestFirst = new Date(date.getFullYear(), date.getMonth(), 1);
-            if (date.getDate() < 1) {
-                latestFirst.setMonth(latestFirst.getMonth() - 1);
-            }
             return latestFirst;
         }
 
