@@ -32,16 +32,13 @@
         }
 
         .prompt-box {
-            background-color: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
             text-align: center;
             width: 90%;
             max-height: 90%;
             position: relative;
-            margin-bottom: 20px;
-            overflow-y: auto;
+            overflow-y: hidden;
         }
 
         input {
@@ -84,7 +81,7 @@
             grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
             gap: 10px;
             overflow-y: auto;
-            max-height: calc(100vh - 300px);
+            max-height: calc(100vh - 250px);
             justify-content: flex-start;
         }
 
@@ -171,6 +168,30 @@
         .sudo-flix-button:hover {
             background-color: #cc6f00;
         }
+
+        .iframe {
+			width: 100%;
+			height: 90vh;
+			border: none;
+			position: relative;
+			margin-top: -120px;
+			border-radius: 10px;
+			overflow: hidden;
+		}
+		
+		* {
+		  scrollbar-width: none; /* For Firefox */
+		  -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+		}
+
+		*::-webkit-scrollbar {
+		  display: none; /* For WebKit browsers (Chrome, Safari) */
+		}
+		
+		html, body {
+		  height: 100%;
+		  overflow: auto;
+		}
     </style>
 
     <script>
@@ -552,18 +573,13 @@
         promptBox.id = 'embed-prompt-box';
 
         const iframe = document.createElement('iframe');
+        iframe.className = 'iframe';
         if (isTvShow) {
             iframe.src = `https://binge.lol/watch/tv/${tmdbId}?season=${seasonNumber}&ep=${episodeNumber}` ;
         } else {
             iframe.src = `https://binge.lol/watch/movie/${tmdbId}`;
         }
         
-        iframe.style.width = '100%';
-        iframe.style.height = 'calc(90vh - 150px + 120px)';
-        iframe.style.border = 'none';
-        iframe.style.position = 'relative';
-        iframe.style.marginTop = '-120px';
-        iframe.style.borderRadius = '10px';
         iframe.allowFullscreen = true;
         promptBox.appendChild(iframe);
 
