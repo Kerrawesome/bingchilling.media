@@ -157,22 +157,27 @@
         function checkLinks() {
             const checkMessage = document.getElementById('checkMessage');
             checkMessage.textContent = '';
+            document.getElementById('loadingIndicator').style.display = 'block';
+
             let successfulChecks = 0;
             const totalChecks = pageUrls.length;
             let completedChecks = 0;
+            let hasFailed = false;
 
             function handleCheckCompletion(success) {
                 completedChecks++;
                 if (success) {
                     successfulChecks++;
                 } else {
-                    checkMessage.textContent = 'Some links failed.';
-                    document.getElementById('loadingIndicator').style.display = 'none';
-                    return;
+                    hasFailed = true;
                 }
 
                 if (completedChecks === totalChecks) {
-                    checkMessage.textContent = successfulChecks === totalChecks ? 'All links succeeded.' : 'Some links failed.';
+                    if (hasFailed) {
+                        checkMessage.textContent = 'Some links failed.';
+                    } else {
+                        checkMessage.textContent = 'All links succeeded.';
+                    }
                     document.getElementById('loadingIndicator').style.display = 'none';
                 }
             }
@@ -180,7 +185,6 @@
             const scale = document.getElementById('scaleInput').value;
             const updatedPageUrls = pageUrls.map(url => url.replace(/scale=\d+/, `scale=${scale}`));
 
-            document.getElementById('loadingIndicator').style.display = 'block';
             updatedPageUrls.forEach(url => {
                 const img = new Image();
                 const timeout = setTimeout(() => {
