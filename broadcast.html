@@ -583,7 +583,8 @@
             if (logoUrl) {
                 const logoImage = document.createElement('img');
                 logoImage.src = logoUrl;
-                logoImage.style.maxWidth = '20%';
+                logoImage.style.width = '100px';
+		logoImage.style.height = 'auto';
                 logoImage.style.marginBottom = '10px';
                 logoImage.style.borderRadius = '10px';
                 audioContainer.appendChild(logoImage);
@@ -593,7 +594,7 @@
             channelName.textContent = name;
             channelName.style.color = '#ffffff';
             channelName.style.marginTop = '10px';
-            channelName.style.fontSize = '16px';
+            channelName.style.fontSize = '20px';
             channelName.style.fontWeight = 'bold';
             audioContainer.appendChild(channelName);
 
