@@ -3,49 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
+    <link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
     <title>PressReader Tools</title>
     <style>
         .token-output, .api-output {
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+        #loadingIndicator {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <h1>PressReader Tools</h1>
     <h3>By Kerrawesome</h3>
-	<p>These tools are for educational purposes only.<br>All content displayed is copyright and remains the property of PressReader Inc.</p>
+    <p>These tools are for educational purposes only.<br>All content displayed is copyright and remains the property of PressReader Inc.</p>
 
-    
     <label for="cid">CID:</label>
     <input type="text" id="cid" name="cid"><br><br>
-    
+
     <label for="issueDate">Issue Date:</label>
     <input type="text" id="issueDate" name="issueDate"><br><br>
-    
+
     <label for="issueSuffix">Issue Suffix (default):</label>
     <input type="text" id="issueSuffix" name="issueSuffix" value="00000000001001"><br><br>
-    
+
     <button id="fetchIssueInfo">Issue Info</button>
     <button id="fetchCatalog">Catalog</button>
     <button id="fetchPages">Fetch Pages</button>
-    
+
     <h2 id="tokenHeader" style="display:none;">Bearer Token</h2>
     <pre id="tokenOutput" class="token-output"></pre>
-    
+
     <h2 id="accessTokenHeader" style="display:none;">Access Tokens</h2>
     <pre id="accessTokenOutput" class="token-output"></pre>
-    
+
     <h2>API Output</h2>
     <pre id="output" class="api-output"></pre>
-    
+
     <div id="scaleContainer" style="display:none;">
         <label for="scaleInput">Scale:</label>
         <input type="number" id="scaleInput" name="scaleInput" value="300" min="1">
+        <button id="checkLinks">Check</button>
     </div>
-    
+
+    <div id="checkMessage"></div>
     <div id="linksContainer"></div>
+    <div id="loadingIndicator">Loading...</div>
 
     <script>
         const primaryAccessToken = '_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!';
@@ -61,6 +66,7 @@
             document.getElementById('tokenHeader').style.display = 'none';
             document.getElementById('accessTokenHeader').style.display = 'none';
             document.getElementById('scaleContainer').style.display = 'none';
+            document.getElementById('checkMessage').textContent = '';
         }
 
         async function fetchBearerToken() {
@@ -140,11 +146,58 @@
 
         function updatePageLinks() {
             const scale = document.getElementById('scaleInput').value;
+            document.getElementById('checkMessage').textContent = '';
             const pageLinksHtml = pageUrls.map(url => {
                 const updatedUrl = url.replace(/scale=\d+/, `scale=${scale}`);
                 return `<a href="${updatedUrl}" target="_blank" class="thumb">${updatedUrl}</a>`;
             }).join('<br>');
             document.getElementById('linksContainer').innerHTML = pageLinksHtml;
+        }
+
+        function checkLinks() {
+            const checkMessage = document.getElementById('checkMessage');
+            checkMessage.textContent = '';
+            let successfulChecks = 0;
+            const totalChecks = pageUrls.length;
+            let completedChecks = 0;
+
+            function handleCheckCompletion(success) {
+                completedChecks++;
+                if (success) {
+                    successfulChecks++;
+                } else {
+                    checkMessage.textContent = 'Some links failed.';
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    return;
+                }
+
+                if (completedChecks === totalChecks) {
+                    checkMessage.textContent = successfulChecks === totalChecks ? 'All links succeeded.' : 'Some links failed.';
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                }
+            }
+
+            const scale = document.getElementById('scaleInput').value;
+            const updatedPageUrls = pageUrls.map(url => url.replace(/scale=\d+/, `scale=${scale}`));
+
+            document.getElementById('loadingIndicator').style.display = 'block';
+            updatedPageUrls.forEach(url => {
+                const img = new Image();
+                const timeout = setTimeout(() => {
+                    img.src = ''; // Cancel the image load
+                    handleCheckCompletion(false);
+                }, 5000); // Timeout after 5 seconds
+
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    handleCheckCompletion(true);
+                };
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    handleCheckCompletion(false);
+                };
+                img.src = url;
+            });
         }
 
         document.getElementById('fetchIssueInfo').addEventListener('click', async () => {
@@ -192,6 +245,7 @@
         });
 
         document.getElementById('scaleInput').addEventListener('input', updatePageLinks);
+        document.getElementById('checkLinks').addEventListener('click', checkLinks);
     </script>
 </body>
 </html>
