@@ -13,6 +13,15 @@
         #loadingIndicator {
             display: none;
         }
+        .code-style {
+            font-family: monospace;
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .checkbox-with-padding {
+        margin-left: 10px;
+    	}
     </style>
 </head>
 <body>
@@ -46,6 +55,10 @@
         <label for="scaleInput">Scale:</label>
         <input type="number" id="scaleInput" name="scaleInput" value="300" min="1">
         <button id="checkLinks">Check</button>
+        <label class="checkbox-with-padding">
+            <input type="checkbox" id="formatCheckbox">
+            Get links as <span class="code-style">.png</span>
+        </label>
     </div>
 
     <div id="checkMessage"></div>
@@ -67,6 +80,7 @@
             document.getElementById('accessTokenHeader').style.display = 'none';
             document.getElementById('scaleContainer').style.display = 'none';
             document.getElementById('checkMessage').textContent = '';
+            document.getElementById('formatCheckbox').checked = false;
         }
 
         async function fetchBearerToken() {
@@ -146,9 +160,13 @@
 
         function updatePageLinks() {
             const scale = document.getElementById('scaleInput').value;
+            const formatCheckbox = document.getElementById('formatCheckbox').checked;
             document.getElementById('checkMessage').textContent = '';
             const pageLinksHtml = pageUrls.map(url => {
-                const updatedUrl = url.replace(/scale=\d+/, `scale=${scale}`);
+                let updatedUrl = url.replace(/scale=\d+/, `scale=${scale}`);
+                if (formatCheckbox) {
+                    updatedUrl += '&format=png';
+                }
                 return `<a href="${updatedUrl}" target="_blank" class="thumb">${updatedUrl}</a>`;
             }).join('<br>');
             document.getElementById('linksContainer').innerHTML = pageLinksHtml;
@@ -183,7 +201,14 @@
             }
 
             const scale = document.getElementById('scaleInput').value;
-            const updatedPageUrls = pageUrls.map(url => url.replace(/scale=\d+/, `scale=${scale}`));
+            const formatCheckbox = document.getElementById('formatCheckbox').checked;
+            const updatedPageUrls = pageUrls.map(url => {
+                let updatedUrl = url.replace(/scale=\d+/, `scale=${scale}`);
+                if (formatCheckbox) {
+                    updatedUrl += '&format=png';
+                }
+                return updatedUrl;
+            });
 
             updatedPageUrls.forEach(url => {
                 const img = new Image();
@@ -250,6 +275,7 @@
 
         document.getElementById('scaleInput').addEventListener('input', updatePageLinks);
         document.getElementById('checkLinks').addEventListener('click', checkLinks);
+        document.getElementById('formatCheckbox').addEventListener('change', updatePageLinks);
     </script>
 </body>
 </html>
