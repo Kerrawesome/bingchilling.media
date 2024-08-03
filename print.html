@@ -8,9 +8,6 @@
     <link rel="manifest" href="manifest.json">
     <title>Bing Chilling News</title>
     <link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
-    <link rel="stylesheet" href="https://unpkg.com/air-datepicker@3.0.0/air-datepicker.css">
-    <script src="https://unpkg.com/air-datepicker@3.0.0/air-datepicker.js"></script>
-    <script src="https://unpkg.com/date-fns@2.28.0"></script>
     <style>
         body {
             display: flex;
@@ -223,18 +220,18 @@
         }
 
         * {
-		  scrollbar-width: none; /* For Firefox */
-		  -ms-overflow-style: none;  /* For Internet Explorer and Edge */
-		}
+            scrollbar-width: none; /* For Firefox */
+            -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+        }
 
-		*::-webkit-scrollbar {
-		  display: none; /* For WebKit browsers (Chrome, Safari) */
-		}
-		
-		html, body {
-		  height: 100%;
-		  overflow: auto;
-		}
+        *::-webkit-scrollbar {
+            display: none; /* For WebKit browsers (Chrome, Safari) */
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
     </style>
     <script>
         const primaryAccessToken = '_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!';
@@ -255,7 +252,7 @@
             const day = date.getDate().toString().padStart(2, '0');
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
+            return `${year}-${month}-${day}`;
         }
 
         function formatFullDate(date) {
@@ -292,13 +289,6 @@
             return `${newspaperCode}${year}${month}${day}00000000001001`;
         }
 
-        function isPast130amNZ() {
-            const now = new Date();
-            const nzOffset = 12 * 60 * 60 * 1000; // NZ is UTC+12
-            const nzTime = new Date(now.getTime() + nzOffset);
-            return nzTime.getHours() > 1 || (nzTime.getHours() === 1 && nzTime.getMinutes() >= 30);
-        }
-
         function getLatestEditionDate(date, code) {
             const day = date.getDay();
             let latestDate = new Date(date);
@@ -314,32 +304,6 @@
             }
 
             return latestDate;
-        }
-
-        function getMinDate() {
-            const currentDate = new Date();
-            const minDate = new Date(currentDate);
-            minDate.setMonth(currentDate.getMonth() - 3);
-            return minDate;
-        }
-
-        function getDisabledDatesForNewspaper(code) {
-            const currentDate = new Date();
-            const minDate = getMinDate();
-            const disabledDates = [];
-
-            while (minDate <= currentDate) {
-                const day = minDate.getDay();
-                if ((code === '1126' && (day === 0 || day === 6)) || // NZ Herald, Mon-Fri
-                    (code === '7478' && day !== 6) || // Weekend Herald, Sat
-                    (code === '1211' && day !== 0) || // Herald on Sunday, Sun
-                    (code === '1759' && day !== 4)) { // Western Leader, Thu
-                    disabledDates.push(new Date(minDate));
-                }
-                minDate.setDate(minDate.getDate() + 1);
-            }
-
-            return disabledDates;
         }
 
         let currentPrompt;
@@ -463,6 +427,7 @@
             dropdownContainer.classList.add('dropdown-container');
             const datePickerInput = document.createElement('input');
             datePickerInput.id = 'date-picker';
+            datePickerInput.type = 'date'; // Use HTML5 date picker
             dropdownContainer.appendChild(datePickerInput);
             dropdownContainer.style.textAlign = 'center'; // Center the date picker input
             promptBox.appendChild(dropdownContainer);
@@ -511,35 +476,12 @@
             currentIssueId = getIssueIdForDate(newspaperCode, latestEditionDate);
             loadPage(currentIssueId, 1, aspectRatio);
 
-            // Initialize Air Datepicker
-            const minDate = getMinDate();
-            const disabledDates = getDisabledDatesForNewspaper(newspaperCode);
-
-            new AirDatepicker('#date-picker', {
-                locale: {
-                    days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-                    daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-                    daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-                    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                    monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    today: 'Today',
-                    clear: 'Clear',
-                    dateFormat: 'EEEE, dd MMMM yyyy',
-                    timeFormat: 'HH:mm',
-                    firstDay: 1
-                },
-                selectedDates: [latestEditionDate],
-                minDate: minDate,
-                maxDate: currentDate,
-                dateFormat: 'EEEE, dd MMMM yyyy',
-                isDisabled({date}) {
-                    return disabledDates.some(disabledDate => dateFns.isEqual(date, disabledDate));
-                },
-                onSelect({date}) {
-                    currentIssueId = getIssueIdForDate(newspaperCode, date);
-                    loadPage(currentIssueId, 1, aspectRatio);
-                    document.getElementById('page-number').value = '1';
-                }
+            // Event listener for date picker change
+            datePickerInput.addEventListener('change', (event) => {
+                const selectedDate = new Date(event.target.value);
+                currentIssueId = getIssueIdForDate(newspaperCode, selectedDate);
+                loadPage(currentIssueId, 1, aspectRatio);
+                document.getElementById('page-number').value = '1';
             });
 
             function navigatePage(offset) {
