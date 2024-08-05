@@ -177,6 +177,7 @@
             overflow: hidden;
             border-radius: 10px;
             box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            margin-top: 10px;
         }
         
         .iframe {
@@ -188,7 +189,28 @@
             border: none;
             border-radius: 10px;
         }
-        
+
+        .dropdown-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .dropdown {
+            width: 150px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2e2e2e;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .dropdown option {
+            text-align: left;
+        }
+
         * {
           scrollbar-width: none; /* For Firefox */
           -ms-overflow-style: none;  /* For Internet Explorer and Edge */
@@ -215,6 +237,8 @@
     let showName;
     let seasonId;
     let episodeId;
+    let currentSource = 'vidcloud';
+    let releaseYear;
 
     function debounce(callback, delay) {
         clearTimeout(debounceTimer);
@@ -323,14 +347,15 @@
 
                 const resultItem = document.createElement('div');
                 resultItem.classList.add('result-item');
-                resultItem.onclick = function() {
+                resultItem.onclick = async function() {
                     tmdbId = result.id;
                     isTvShow = result.media_type === 'tv';
                     showName = name;
+                    releaseYear = year; // Store the release year
                     if (isTvShow) {
                         showSeasonSelectionPrompt(result.id, name);
                     } else {
-                        showEmbeddedVidSrc();
+                        await showEmbeddedVidSrc();
                     }
                 };
 
@@ -573,7 +598,7 @@
         showEmbeddedVidSrc();
     }
 
-    function showEmbeddedVidSrc() {
+    async function showEmbeddedVidSrc() {
         const previousPromptId = currentPrompt;
         currentPrompt = 'embed-prompt-box';
         document.getElementById(previousPromptId).remove();
@@ -582,16 +607,29 @@
         promptBox.classList.add('prompt-box');
         promptBox.id = 'embed-prompt-box';
 
+        const dropdownContainer = document.createElement('div');
+        dropdownContainer.className = 'dropdown-container';
+        promptBox.appendChild(dropdownContainer);
+
+        const sourceSelector = document.createElement('select');
+        sourceSelector.id = 'source-selector';
+        sourceSelector.className = 'dropdown';
+        sourceSelector.innerHTML = `
+            <option value="vidcloud">Vidcloud</option>
+            <option value="megacloud">Megacloud</option>
+        `;
+        sourceSelector.onchange = function() {
+            currentSource = sourceSelector.value;
+            updateIframeSrc();
+        };
+        dropdownContainer.appendChild(sourceSelector);
+
         const iframeContainer = document.createElement('div');
         iframeContainer.className = 'iframe-container';
 
         const iframe = document.createElement('iframe');
         iframe.className = 'iframe';
-        if (isTvShow) {
-            iframe.src = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
-        } else {
-            iframe.src = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
-        }
+        iframe.id = 'video-iframe';
         
         iframe.allowFullscreen = true;
         iframeContainer.appendChild(iframe);
@@ -601,6 +639,28 @@
         promptBox.appendChild(footer);
 
         document.body.appendChild(promptBox);
+
+        await updateIframeSrc();
+    }
+
+    async function updateIframeSrc() {
+        let apiUrl = `https://api.braflix.ru/${currentSource}/sources-with-title?title=${encodeURIComponent(showName)}&year=${releaseYear}&mediaType=${isTvShow ? 'tv' : 'movie'}&tmdbId=${tmdbId}`;
+        if (isTvShow) {
+            apiUrl += `&seasonId=${seasonNumber}&episodeId=${episodeNumber}`;
+        }
+        try {
+            let response = await fetch(apiUrl);
+            let videoString = await response.text(); // Handle the response as plain text
+            let videoUrl;
+            if (currentSource === 'vidcloud') {
+                videoUrl = `https://rabbitstream.net/v2/embed-4/${videoString}?_debug=true`;
+            } else if (currentSource === 'megacloud') {
+                videoUrl = `https://megacloud.tv/embed-1/e-1/${videoString}?_debug=true`;
+            }
+            document.getElementById('video-iframe').src = videoUrl;
+        } catch (error) {
+            console.error('Error fetching video URL:', error);
+        }
     }
 
     window.onload = function() {
