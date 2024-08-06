@@ -236,13 +236,6 @@
         const primaryAccessToken = '_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!';
         const secondaryAccessToken = '7lykuJZcSDUnlAxrCh89oET_SIwEwQK3jDRuibpFI8yb2aKadg_W2LSSlf8kO6EDFFBpcejU9ANbN59GiAQlV9sjVMeMTSyFafYCK6beouM!';
 
-        const newspapers = [
-            { name: 'The New Zealand Herald', code: '1126', schedule: 'Mon-Fri', averageScale: 289 },
-            { name: 'The Weekend Herald', code: '7478', schedule: 'Sat', averageScale: 211 },
-            { name: 'The Herald on Sunday', code: '1211', schedule: 'Sun', averageScale: 279 },
-            { name: 'Western Leader', code: '1759', schedule: 'Thu', averageScale: 227 }
-        ];
-
         function setVh() {
             let vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -295,39 +288,33 @@
             return `${newspaperCode}${year}${month}${day}00000000001001`;
         }
 
-        function getLatestEditionDate(date, schedule) {
+        function getLatestEditionDate(date, code) {
             const day = date.getDay();
             let latestDate = new Date(date);
 
-            switch (schedule) {
-                case 'Mon-Fri':
-                    if (day === 0 || day === 6) {
-                        latestDate.setDate(date.getDate() - ((day === 0) ? 2 : 1));
-                    }
-                    break;
-                case 'Sat':
-                    if (day !== 6) {
-                        latestDate = getLastSaturday(date);
-                    }
-                    break;
-                case 'Sun':
-                    if (day !== 0) {
-                        latestDate = getLastSunday(date);
-                    }
-                    break;
-                case 'Thu':
-                    if (day !== 4) {
-                        latestDate.setDate(date.getDate() - (day < 4 ? day + 3 : day - 4));
-                    }
-                    break;
+            if (code === '1126' && (day === 0 || day === 6)) { // NZ Herald, Mon-Fri
+                latestDate.setDate(date.getDate() - ((day === 0) ? 2 : 1));
+            } else if (code === '7478' && day !== 6) { // Weekend Herald, Sat
+                latestDate = getLastSaturday(date);
+            } else if (code === '1211' && day !== 0) { // Herald on Sunday, Sun
+                latestDate = getLastSunday(date);
+            } else if (code === '1759' && day !== 4) { // Western Leader, Thu
+                latestDate.setDate(date.getDate() - (day < 4 ? day + 3 : day - 4));
             }
 
             return latestDate;
         }
 
         let currentPrompt;
-        let currentIssueId;
-        let firstPageScale = {};
+        let currentIssueId; // Declare currentIssueId globally to update it in the date picker
+        let firstPageScale = {}; // Store the scale for the first page of each issue
+
+        const averageScales = {
+            '1126': 289, // NZ Herald
+            '7478': 211, // Weekend Herald
+            '1211': 279, // Herald on Sunday
+            '1759': 227  // Western Leader
+        };
 
         function createInitialPrompt() {
             if (currentPrompt) {
@@ -369,13 +356,19 @@
             newspaperList.classList.add('newspaper-list');
 
             const currentDate = getCurrentDate();
+            const newspapers = [
+                { name: 'The New Zealand Herald', code: '1126' },
+                { name: 'The Weekend Herald', code: '7478' },
+                { name: 'The Herald on Sunday', code: '1211'},
+                { name: 'Western Leader', code: '1759' }
+            ];
 
             newspapers.forEach(newspaper => {
                 const item = document.createElement('div');
                 item.classList.add('newspaper-item');
-                item.onclick = () => showEmbeddedReader(newspaper.code, newspaper.averageScale);
+                item.onclick = () => showEmbeddedReader(newspaper.code, newspaper.aspectRatio);
 
-                const latestEditionDate = getLatestEditionDate(currentDate, newspaper.schedule);
+                const latestEditionDate = getLatestEditionDate(currentDate, newspaper.code);
                 fetchFrontPageImage(newspaper.code, latestEditionDate, item);
 
                 const name = document.createElement('h3');
@@ -412,7 +405,7 @@
                     const frontPageKey = data.PageKeys.find(page => page.PageNumber === 1).Key;
                     const imgElement = document.createElement('img');
                     imgElement.classList.add('front-page-img');
-                    imgElement.style.borderRadius = '5px';
+                    imgElement.style.borderRadius = '5px'; // Decrease the rounding slightly
                     const pageUrl = `https://i.prcdn.co/img?file=${issueId}&page=1&scale=200&ticket=${frontPageKey}`;
                     imgElement.src = pageUrl;
                     container.insertBefore(imgElement, container.firstChild);
@@ -420,7 +413,7 @@
                 .catch(error => console.error('Error fetching front page image:', error));
         }
 
-        function showEmbeddedReader(newspaperCode, averageScale) {
+        function showEmbeddedReader(newspaperCode, aspectRatio) {
             const previousPromptId = currentPrompt;
             currentPrompt = 'reader-prompt-box';
             document.getElementById(previousPromptId).remove();
@@ -433,9 +426,9 @@
             dropdownContainer.classList.add('dropdown-container');
             const datePickerInput = document.createElement('input');
             datePickerInput.id = 'date-picker';
-            datePickerInput.type = 'date';
+            datePickerInput.type = 'date'; // Use HTML5 date picker
             dropdownContainer.appendChild(datePickerInput);
-            dropdownContainer.style.textAlign = 'center';
+            dropdownContainer.style.textAlign = 'center'; // Center the date picker input
             promptBox.appendChild(dropdownContainer);
 
             const readerContainer = document.createElement('div');
@@ -443,6 +436,7 @@
 
             const img = document.createElement('img');
             img.id = 'newspaper-page';
+            img.style.aspectRatio = aspectRatio;
             readerContainer.appendChild(img);
 
             promptBox.appendChild(readerContainer);
@@ -477,21 +471,22 @@
             document.body.appendChild(promptBox);
 
             const currentDate = getCurrentDate();
-            const latestEditionDate = getLatestEditionDate(currentDate, newspapers.find(n => n.code === newspaperCode).schedule);
+            const latestEditionDate = getLatestEditionDate(currentDate, newspaperCode);
             currentIssueId = getIssueIdForDate(newspaperCode, latestEditionDate);
-            loadPage(currentIssueId, 1, averageScale);
+            loadPage(currentIssueId, 1, aspectRatio);
 
+            // Event listener for date picker change
             datePickerInput.addEventListener('change', (event) => {
                 const selectedDate = new Date(event.target.value);
                 currentIssueId = getIssueIdForDate(newspaperCode, selectedDate);
-                loadPage(currentIssueId, 1, averageScale);
+                loadPage(currentIssueId, 1, aspectRatio);
                 document.getElementById('page-number').value = '1';
             });
 
             function navigatePage(offset) {
                 const pageNumber = parseInt(pageNumberInput.value.split('/')[0]) + offset;
                 if (pageNumber > 0 && pageNumber <= parseInt(pageNumberInput.max)) {
-                    loadPage(currentIssueId, pageNumber, averageScale);
+                    loadPage(currentIssueId, pageNumber, aspectRatio);
                     pageNumberInput.value = `${pageNumber}/${pageNumberInput.max}`;
                 }
             }
@@ -508,19 +503,19 @@
             function loadPageForCurrentIssue() {
                 const pageNumber = parseInt(pageNumberInput.value) || parseInt(pageNumberInput.dataset.current);
                 if (pageNumber > 0 && pageNumber <= parseInt(pageNumberInput.max)) {
-                    loadPage(currentIssueId, pageNumber, averageScale);
+                    loadPage(currentIssueId, pageNumber, aspectRatio);
                 }
             }
         }
 
-        function loadPage(issueId, pageNumber, averageScale) {
+        function loadPage(issueId, pageNumber, aspectRatio) {
             const accessToken = primaryAccessToken;
             const keyUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
             fetch(keyUrl)
                 .then(response => response.json())
                 .then(data => {
                     const pageKey = data.PageKeys.find(page => page.PageNumber === pageNumber).Key;
-                    loadPageWithDecrement(issueId, pageNumber, pageKey, averageScale);
+                    loadPageWithDecrement(issueId, pageNumber, pageKey, aspectRatio);
                     document.getElementById('page-number').max = data.PageKeys.length;
                     document.getElementById('page-number').dataset.current = pageNumber;
                 })
@@ -537,8 +532,9 @@
             });
         }
 
-        async function loadPageWithDecrement(issueId, pageNumber, pageKey, averageScale) {
-            let scale = averageScale;
+        async function loadPageWithDecrement(issueId, pageNumber, pageKey, aspectRatio) {
+            const maxScale = averageScales[issueId.slice(0, 4)];
+            let scale = maxScale;
             while (scale > 0) {
                 try {
                     await loadImage(scale, issueId, pageNumber, pageKey);
