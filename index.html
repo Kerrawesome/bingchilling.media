@@ -651,7 +651,6 @@
         sourceSelector.innerHTML = `
             <option value="vidcloud">Vidcloud</option>
             <option value="megacloud">Megacloud</option>
-            <option value="soaperTV">SoaperTV</option>
         `;
         sourceSelector.onchange = function() {
             currentSource = sourceSelector.value;
@@ -706,28 +705,20 @@
 
     async function updateIframeSrc() {
         let videoUrl;
-        if (currentSource === 'soaperTV') {
-            if (isTvShow) {
-                videoUrl = `https://sudoflix-player.pages.dev/media/tmdb-tv-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}/${seasonId}/${episodeId}`;
-            } else {
-                videoUrl = `https://sudoflix-player.pages.dev/media/tmdb-movie-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}`;
+        let apiUrl = `https://api.braflix.ru/${currentSource}/sources-with-title?title=${encodeURIComponent(showName)}&year=${releaseYear}&mediaType=${isTvShow ? 'tv' : 'movie'}&tmdbId=${tmdbId}`;
+        if (isTvShow) {
+            apiUrl += `&seasonId=${seasonNumber}&episodeId=${episodeNumber}`;
+        }
+        try {
+            let response = await fetch(apiUrl);
+            let videoString = await response.text(); // Handle the response as plain text
+            if (currentSource === 'vidcloud') {
+                videoUrl = `https://rabbitstream.net/v2/embed-4/${videoString}?_debug=true`;
+            } else if (currentSource === 'megacloud') {
+                videoUrl = `https://megacloud.tv/embed-1/e-1/${videoString}?_debug=true`;
             }
-        } else {
-            let apiUrl = `https://api.braflix.ru/${currentSource}/sources-with-title?title=${encodeURIComponent(showName)}&year=${releaseYear}&mediaType=${isTvShow ? 'tv' : 'movie'}&tmdbId=${tmdbId}`;
-            if (isTvShow) {
-                apiUrl += `&seasonId=${seasonNumber}&episodeId=${episodeNumber}`;
-            }
-            try {
-                let response = await fetch(apiUrl);
-                let videoString = await response.text(); // Handle the response as plain text
-                if (currentSource === 'vidcloud') {
-                    videoUrl = `https://rabbitstream.net/v2/embed-4/${videoString}?_debug=true`;
-                } else if (currentSource === 'megacloud') {
-                    videoUrl = `https://megacloud.tv/embed-1/e-1/${videoString}?_debug=true`;
-                }
-            } catch (error) {
-                console.error('Error fetching video URL:', error);
-            }
+        } catch (error) {
+            console.error('Error fetching video URL:', error);
         }
         document.getElementById('video-iframe').src = videoUrl;
     }
