@@ -1,5 +1,5 @@
 # Bing Chilling Media
-A simple HTML site providing a quality ad-free entertainment experience.
+A simple proof-of-concept entertainment platform.
 
 Bing Chilling Media uses the [TMDB API](https://developer.themoviedb.org/) to provide a catalogue. Media sources are provided by cloud sharing APIs [Vidcloud](https://rabbitstream.net/) and [Megacloud](https://megacloud.tv/), along with the open-source [sudo-flix](https://pseudo-flix.pro/).
 
@@ -13,6 +13,8 @@ Bing Chilling News delivers a small selection of New Zealand publications, provi
 [https://bingchilling.pages.dev/](https://bingchilling.pages.dev/)
 
 **Bing Chilling Media does not host any media, publications or streams, or endorse piracy; all content displayed is provided by third-party providers.
-Any complaints or DMCA issues should be raised directly with the media, publication or stream providers.**
+Any complaints or DMCA issues should be raised directly with the media, publication or stream providers.** 
+>[!IMPORTANT]
+**Bing Chilling Media is a proof of concept.**
 
 
