@@ -193,6 +193,7 @@
         .dropdown-container {
             display: flex;
             justify-content: center;
+            align-items: center;
             margin-bottom: 10px;
         }
 
@@ -223,6 +224,34 @@
         html, body {
           height: 100%;
           overflow: auto;
+        }
+
+        .control-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            margin-left: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            background-color: #e68a00;
+            color: #ffffff;
+            transition: background-color 0.3s;
+        }
+
+        .control-button:hover {
+            background-color: #cc6f00;
+        }
+
+        .codeblock {
+            font-family: monospace;
+            background-color: #333;
+            color: #fff;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-left: 5px;
         }
     </style>
 
@@ -617,12 +646,38 @@
         sourceSelector.innerHTML = `
             <option value="vidcloud">Vidcloud</option>
             <option value="megacloud">Megacloud</option>
+            <option value="soaperTV">SoaperTV</option>
         `;
         sourceSelector.onchange = function() {
             currentSource = sourceSelector.value;
             updateIframeSrc();
         };
         dropdownContainer.appendChild(sourceSelector);
+
+        // Add the new buttons next to the dropdown
+        const popcornButton = document.createElement('button');
+        popcornButton.className = 'control-button';
+        popcornButton.innerHTML = '🍿';
+        popcornButton.onclick = function() {
+            window.open(document.getElementById('video-iframe').src, '_blank');
+        };
+        dropdownContainer.appendChild(popcornButton);
+
+        const nextEpisodeButton = document.createElement('button');
+        nextEpisodeButton.className = 'control-button';
+        nextEpisodeButton.id = 'next-episode-button';
+        nextEpisodeButton.style.display = isTvShow ? 'block' : 'none'; // Show only for TV shows
+        nextEpisodeButton.innerHTML = 'Next Episode';
+        nextEpisodeButton.onclick = async function() {
+            const nextEpisode = episodeNumber + 1;
+            let nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
+            if (nextEpisodeData) {
+                episodeNumber = nextEpisode;
+                episodeId = nextEpisodeData.id; // Store next episode ID
+                showEmbeddedVidSrc(); // Load the player with the next episode
+            }
+        };
+        dropdownContainer.appendChild(nextEpisodeButton);
 
         const iframeContainer = document.createElement('div');
         iframeContainer.className = 'iframe-container';
@@ -641,25 +696,66 @@
         document.body.appendChild(promptBox);
 
         await updateIframeSrc();
+        await updateNextEpisodeButton();
     }
 
     async function updateIframeSrc() {
-        let apiUrl = `https://api.braflix.ru/${currentSource}/sources-with-title?title=${encodeURIComponent(showName)}&year=${releaseYear}&mediaType=${isTvShow ? 'tv' : 'movie'}&tmdbId=${tmdbId}`;
-        if (isTvShow) {
-            apiUrl += `&seasonId=${seasonNumber}&episodeId=${episodeNumber}`;
-        }
-        try {
-            let response = await fetch(apiUrl);
-            let videoString = await response.text(); // Handle the response as plain text
-            let videoUrl;
-            if (currentSource === 'vidcloud') {
-                videoUrl = `https://rabbitstream.net/v2/embed-4/${videoString}?_debug=true`;
-            } else if (currentSource === 'megacloud') {
-                videoUrl = `https://megacloud.tv/embed-1/e-1/${videoString}?_debug=true`;
+        let videoUrl;
+        if (currentSource === 'soaperTV') {
+            if (isTvShow) {
+                videoUrl = `https://sudoflix-player.pages.dev/media/tmdb-tv-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}/${seasonId}/${episodeId}`;
+            } else {
+                videoUrl = `https://sudoflix-player.pages.dev/media/tmdb-movie-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}`;
             }
-            document.getElementById('video-iframe').src = videoUrl;
+        } else {
+            let apiUrl = `https://api.braflix.ru/${currentSource}/sources-with-title?title=${encodeURIComponent(showName)}&year=${releaseYear}&mediaType=${isTvShow ? 'tv' : 'movie'}&tmdbId=${tmdbId}`;
+            if (isTvShow) {
+                apiUrl += `&seasonId=${seasonNumber}&episodeId=${episodeNumber}`;
+            }
+            try {
+                let response = await fetch(apiUrl);
+                let videoString = await response.text(); // Handle the response as plain text
+                if (currentSource === 'vidcloud') {
+                    videoUrl = `https://rabbitstream.net/v2/embed-4/${videoString}?_debug=true`;
+                } else if (currentSource === 'megacloud') {
+                    videoUrl = `https://megacloud.tv/embed-1/e-1/${videoString}?_debug=true`;
+                }
+            } catch (error) {
+                console.error('Error fetching video URL:', error);
+            }
+        }
+        document.getElementById('video-iframe').src = videoUrl;
+    }
+
+    async function updateNextEpisodeButton() {
+        const nextEpisode = episodeNumber + 1;
+        const nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
+        const nextEpisodeButton = document.getElementById('next-episode-button');
+
+        if (nextEpisodeData) {
+            nextEpisodeButton.innerHTML = `Next Episode <span class="codeblock">#${nextEpisode}</span>`;
+        } else {
+            nextEpisodeButton.innerHTML = 'Next Episode';
+        }
+    }
+
+    async function checkNextEpisodeExists(tmdbId, seasonNumber, episodeNumber) {
+        try {
+            let response = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}/episode/${episodeNumber}?language=en-US`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM',
+                    'Accept': 'application/json'
+                }
+            });
+            if (response.status === 404) {
+                return false;
+            }
+            let data = await response.json();
+            return data; // Return episode data if exists
         } catch (error) {
-            console.error('Error fetching video URL:', error);
+            console.error('Error checking next episode from TMDB:', error);
+            return false;
         }
     }
 
