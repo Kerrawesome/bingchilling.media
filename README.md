@@ -16,6 +16,6 @@ Bing Chilling News delivers a small selection of New Zealand publications, provi
 >[!IMPORTANT]
 >Bing Chilling Media serves as a proof of concept and does not host, store, or manage any media, publications, or streams. The content displayed on our platform is sourced from external third-party providers and is presented for demonstration purposes only.
 >
->We do not endorse or facilitate piracy. Any issues related to the content, including copyright disputes or DMCA concerns, should be directed to the appropriate media, publication, or stream providers. Bing Chilling Media is not responsible for third-party provider content.
+>We do not endorse or facilitate piracy. Any issues related to the content, including copyright disputes or DMCA concerns, should be directed to the appropriate providers. Bing Chilling Media cannot deal with complaints regarding third-party content. 
 
 
