@@ -244,6 +244,11 @@
         .control-button:hover {
             background-color: #cc6f00;
         }
+		
+		.control-button.disabled {
+		background-color: #555;
+		cursor: not-allowed;
+		}
 
         .codeblock {
             font-family: monospace;
@@ -667,7 +672,7 @@
         nextEpisodeButton.className = 'control-button';
         nextEpisodeButton.id = 'next-episode-button';
         nextEpisodeButton.style.display = isTvShow ? 'block' : 'none'; // Show only for TV shows
-        nextEpisodeButton.innerHTML = 'Next Episode';
+        nextEpisodeButton.innerHTML = '';
         nextEpisodeButton.onclick = async function() {
             const nextEpisode = episodeNumber + 1;
             let nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
@@ -728,16 +733,18 @@
     }
 
     async function updateNextEpisodeButton() {
-        const nextEpisode = episodeNumber + 1;
-        const nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
-        const nextEpisodeButton = document.getElementById('next-episode-button');
+    const nextEpisode = episodeNumber + 1;
+    const nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
+    const nextEpisodeButton = document.getElementById('next-episode-button');
 
-        if (nextEpisodeData) {
-            nextEpisodeButton.innerHTML = `Next Episode <span class="codeblock">#${nextEpisode}</span>`;
-        } else {
-            nextEpisodeButton.innerHTML = 'Next Episode';
-        }
+    if (nextEpisodeData) {
+        nextEpisodeButton.innerHTML = `Next: <span class="codeblock">E${nextEpisode}</span>`;
+        nextEpisodeButton.classList.remove('disabled');
+    } else {
+        nextEpisodeButton.innerHTML = 'Next Episode';
+        nextEpisodeButton.classList.add('disabled');
     }
+}
 
     async function checkNextEpisodeExists(tmdbId, seasonNumber, episodeNumber) {
         try {
