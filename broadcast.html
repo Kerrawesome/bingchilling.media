@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <title>Bing Chilling Stream</title>
     <link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
+	<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
         function setVh() {
             let vh = window.innerHeight * 0.01;
@@ -568,51 +569,67 @@
             document.body.appendChild(promptBox);
         }
 
-        function playAudioStream(streamUrl, logoUrl, name) {
-            const previousPromptId = currentPrompt;
-            currentPrompt = 'audio-prompt-box';
-            document.getElementById(previousPromptId).remove();
+	function playAudioStream(streamUrl, logoUrl, name) {
+	    const previousPromptId = currentPrompt;
+	    currentPrompt = 'audio-prompt-box';
+	    document.getElementById(previousPromptId).remove();
+	
+	    const promptBox = document.createElement('div');
+	    promptBox.classList.add('prompt-box');
+	    promptBox.id = 'audio-prompt-box';
+	
+	    const audioContainer = document.createElement('div');
+	    audioContainer.classList.add('audio-container');
+	
+	    if (logoUrl) {
+	        const logoImage = document.createElement('img');
+	        logoImage.src = logoUrl;
+	        logoImage.style.width = '100px';
+	        logoImage.style.height = 'auto';
+	        logoImage.style.marginBottom = '10px';
+	        logoImage.style.borderRadius = '10px';
+	        audioContainer.appendChild(logoImage);
+	    }
+	
+	    const channelName = document.createElement('p');
+	    channelName.textContent = name;
+	    channelName.style.color = '#ffffff';
+	    channelName.style.marginTop = '10px';
+	    channelName.style.fontSize = '20px';
+	    channelName.style.fontWeight = 'bold';
+	    audioContainer.appendChild(channelName);
+	
+	    const audio = document.createElement('audio');
+	    audio.id = 'audioPlayer';
+	    audio.controls = true;
+	    audioContainer.appendChild(audio);
+	
+	    promptBox.appendChild(audioContainer);
+	
+	    const footer = createFooter(false, null, true);
+	    promptBox.appendChild(footer);
+	
+	    document.body.appendChild(promptBox);
+	
+	    // Handling different stream types
+	    if (streamUrl.endsWith('.m3u8')) {
+	        if (Hls.isSupported()) {
+	            const hls = new Hls();
+	            hls.attachMedia(audio);
+	            hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+	                hls.loadSource(streamUrl);
+	                audio.play();
+	            });
+	        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+	            audio.src = streamUrl;
+	            audio.play();
+	        }
+	    } else {
+	        audio.src = streamUrl;
+	        audio.play();
+	    }
+	}
 
-            const promptBox = document.createElement('div');
-            promptBox.classList.add('prompt-box');
-            promptBox.id = 'audio-prompt-box';
-
-            const audioContainer = document.createElement('div');
-            audioContainer.classList.add('audio-container');
-
-            if (logoUrl) {
-                const logoImage = document.createElement('img');
-                logoImage.src = logoUrl;
-                logoImage.style.width = '100px';
-		logoImage.style.height = 'auto';
-                logoImage.style.marginBottom = '10px';
-                logoImage.style.borderRadius = '10px';
-                audioContainer.appendChild(logoImage);
-            }
-
-            const channelName = document.createElement('p');
-            channelName.textContent = name;
-            channelName.style.color = '#ffffff';
-            channelName.style.marginTop = '10px';
-            channelName.style.fontSize = '20px';
-            channelName.style.fontWeight = 'bold';
-            audioContainer.appendChild(channelName);
-
-            const audio = document.createElement('audio');
-            audio.id = 'audioPlayer';
-            audio.controls = true;
-            audio.src = streamUrl;
-            audioContainer.appendChild(audio);
-
-            promptBox.appendChild(audioContainer);
-
-            const footer = createFooter(false, null, true);
-            promptBox.appendChild(footer);
-
-            document.body.appendChild(promptBox);
-
-            audio.play();
-        }
 
         function showEmbeddedIframe(url) {
             const previousPromptId = currentPrompt;
