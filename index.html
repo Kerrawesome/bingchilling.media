@@ -85,7 +85,7 @@
             justify-content: flex-start;
         }
 
-        .season-item, .episode-item {
+        .result-item, .season-item, .episode-item {
             padding: 10px;
             background-color: #2e2e2e;
             border-radius: 10px;
@@ -97,28 +97,9 @@
             align-items: center;
             position: relative;
         }
-        
-        .result-item {
-            padding: 10px;
-            background-color: #2e2e2e;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
 
         .result-item img {
             align-self: flex-start; 
-        }
-
-        .results .item-info {
-            margin-top: auto;
-            margin-bottom: auto;
-            width: 100%; 
         }
 
         .item-info h3 {
@@ -389,80 +370,89 @@
         }
     }
 
-    async function displayResults(results) {
-        const resultsBox = document.getElementById('results-box');
-        resultsBox.innerHTML = '';
-        if (results && results.length > 0) {
-            for (const result of results) {
-                const name = result.title || result.name;
-                const year = (result.release_date || result.first_air_date || '').split('-')[0];
-                const posterPath = result.poster_path ? 'https://image.tmdb.org/t/p/w200' + result.poster_path : '';
-                const mediaType = result.media_type === 'movie' ? 'Movie' : 'TV Show';
+   async function displayResults(results) {
+    const resultsBox = document.getElementById('results-box');
+    resultsBox.innerHTML = '';
+    if (results && results.length > 0) {
+        for (const result of results) {
+            const name = result.title || result.name;
+            const releaseDate = result.release_date || result.first_air_date || '';
+            const releaseDateObj = new Date(releaseDate);
+            const currentDate = new Date();
 
-                if (!posterPath) {
-                    continue; // Skip listings without an image
-                }
-
-                const resultItem = document.createElement('div');
-                resultItem.classList.add('result-item');
-                resultItem.onclick = async function() {
-                    tmdbId = result.id;
-                    isTvShow = result.media_type === 'tv';
-                    showName = name;
-                    releaseYear = year;
-                    if (isTvShow) {
-                        showSeasonSelectionPrompt(result.id, name);
-                    } else {
-                        await showEmbeddedVidSrc();
-                    }
-                };
-
-                if (posterPath) {
-                    const resultImage = document.createElement('img');
-                    resultImage.src = posterPath;
-                    resultItem.appendChild(resultImage);
-                }
-
-                const resultInfo = document.createElement('div');
-                resultInfo.classList.add('item-info');
-
-                const resultTitle = document.createElement('h3');
-                resultTitle.textContent = name;
-                resultInfo.appendChild(resultTitle);
-
-                let tags = mediaType === 'Movie' ? await getReleaseTags(result.id) : mediaType;
-                
-                // Fallback to 'Movie' if tags are empty
-                if (!tags) {
-                    tags = 'Movie';
-                }
-
-                const resultDetails = document.createElement('p');
-					if (mediaType === 'Movie') {
-						resultDetails.innerHTML = `${year} • Movie`;
-					} else {
-						resultDetails.innerHTML = `${year} • ${tags}`;
-					}
-
-					if (!resultInfo.contains(resultDetails)) {
-						resultInfo.appendChild(resultDetails);
-					}
-
-					if (mediaType === 'Movie' && tags !== 'Movie') {
-						const resultTags = document.createElement('p');
-						resultTags.innerHTML = tags;
-
-						if (!resultInfo.contains(resultTags)) {
-							resultInfo.appendChild(resultTags);
-						}
-					}
-
-                resultItem.appendChild(resultInfo);
-
-                resultsBox.appendChild(resultItem);
+            // Skip this item if the release date is in the future
+            if (releaseDateObj > currentDate) {
+                continue;
             }
+
+            const year = releaseDate.split('-')[0];
+            const posterPath = result.poster_path ? 'https://image.tmdb.org/t/p/original' + result.poster_path : '';
+            const mediaType = result.media_type === 'movie' ? 'Movie' : 'TV Show';
+
+            if (!posterPath) {
+                continue; // Skip listings without an image
+            }
+
+            const resultItem = document.createElement('div');
+            resultItem.classList.add('result-item');
+            resultItem.onclick = async function() {
+                tmdbId = result.id;
+                isTvShow = result.media_type === 'tv';
+                showName = name;
+                releaseYear = year;
+                if (isTvShow) {
+                    showSeasonSelectionPrompt(result.id, name);
+                } else {
+                    await showEmbeddedVidSrc();
+                }
+            };
+
+            if (posterPath) {
+                const resultImage = document.createElement('img');
+                resultImage.src = posterPath;
+                resultItem.appendChild(resultImage);
+            }
+
+            const resultInfo = document.createElement('div');
+            resultInfo.classList.add('item-info');
+
+            const resultTitle = document.createElement('h3');
+            resultTitle.textContent = name;
+            resultInfo.appendChild(resultTitle);
+
+            let tags = mediaType === 'Movie' ? await getReleaseTags(result.id) : mediaType;
+            
+            // Fallback to 'Movie' if tags are empty
+            if (!tags) {
+                tags = 'Movie';
+            }
+
+            const resultDetails = document.createElement('p');
+            if (mediaType === 'Movie') {
+                resultDetails.innerHTML = `${year} • Movie`;
+            } else {
+                resultDetails.innerHTML = `${year} • ${tags}`;
+            }
+
+            if (!resultInfo.contains(resultDetails)) {
+                resultInfo.appendChild(resultDetails);
+            }
+
+            if (mediaType === 'Movie' && tags !== 'Movie') {
+                const resultTags = document.createElement('p');
+                resultTags.innerHTML = tags;
+
+                if (!resultInfo.contains(resultTags)) {
+                    resultInfo.appendChild(resultTags);
+                }
+            }
+
+            resultItem.appendChild(resultInfo);
+
+            resultsBox.appendChild(resultItem);
         }
     }
+}
 
     async function getReleaseTags(movieId) {
         const apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
@@ -565,7 +555,7 @@
 
                 if (season.poster_path) {
                     const seasonImage = document.createElement('img');
-                    seasonImage.src = 'https://image.tmdb.org/t/p/w200' + season.poster_path;
+                    seasonImage.src = 'https://image.tmdb.org/t/p/original' + season.poster_path;
                     seasonItem.appendChild(seasonImage);
                 }
 
@@ -638,7 +628,7 @@
                 };
 
                 const episodeImage = document.createElement('img');
-                episodeImage.src = 'https://image.tmdb.org/t/p/w200' + episode.still_path;
+                episodeImage.src = 'https://image.tmdb.org/t/p/original' + episode.still_path;
                 episodeItem.appendChild(episodeImage);
 
                 const episodeInfo = document.createElement('div');
