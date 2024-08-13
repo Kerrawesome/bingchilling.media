@@ -438,18 +438,24 @@
                 }
 
                 const resultDetails = document.createElement('p');
-				if (mediaType === 'Movie') {
-					resultDetails.innerHTML = `${year} • Movie`;
-				} else {
-					resultDetails.innerHTML = `${year} • ${tags}`;
-				}
-				resultInfo.appendChild(resultDetails);
+					if (mediaType === 'Movie') {
+						resultDetails.innerHTML = `${year} • Movie`;
+					} else {
+						resultDetails.innerHTML = `${year} • ${tags}`;
+					}
 
-				if (mediaType === 'Movie' && tags !== 'Movie') {
-					const resultTags = document.createElement('p');
-					resultTags.innerHTML = tags;
-					resultInfo.appendChild(resultTags);
-				}
+					if (!resultInfo.contains(resultDetails)) {
+						resultInfo.appendChild(resultDetails);
+					}
+
+					if (mediaType === 'Movie' && tags !== 'Movie') {
+						const resultTags = document.createElement('p');
+						resultTags.innerHTML = tags;
+
+						if (!resultInfo.contains(resultTags)) {
+							resultInfo.appendChild(resultTags);
+						}
+					}
 
                 resultItem.appendChild(resultInfo);
 
