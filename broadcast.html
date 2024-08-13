@@ -382,47 +382,22 @@
                 url: 'https://freeviewnz.tv/tvguide/whats-on/?st=streaming'
             });
 
-            const delayedChannels = [];
-            const specificChannels = [
-                'mjh-discovery-popup2', 'mjh-discovery-hgtv', 'mjh-discovery-ptcn', 
-		'mjh-discovery-ptms', 'mjh-discovery-ptgn', 'mjh-discovery-fast4', 
-		'mjh-discovery-fast5', 'mjh-discovery-fast1', 'mjh-discovery-fast7', 
-		'mjh-discovery-fast2', 'mjh-discovery-fast6'
-            ];
-
-            let tracksideIndex = -1;
-
             tvLines.forEach(line => {
-                if (line.startsWith('#EXTINF')) {
-                    const channelIdMatch = line.match(/channel-id="([^"]+)"/);
-                    const channelId = channelIdMatch ? channelIdMatch[1] : '';
-                    const channelInfo = line.match(/tvg-logo="([^"]+)"/);
-                    currentItem = {
-                        name: line.split(',')[1],
-                        logo: channelInfo ? channelInfo[1] : '',
-                        channelId: channelId
-                    };
-                } else if (line.startsWith('http')) {
-                    currentItem.url = line;
-                    if (query && !currentItem.name.toLowerCase().includes(query)) {
-                        return;
-                    }
-                    if (currentItem.channelId === 'mjh-trackside-2') {
-                        tracksideIndex = tvResults.length;
-                    }
-                    if (specificChannels.includes(currentItem.channelId)) {
-                        delayedChannels.push(currentItem);
-                    } else {
-                        tvResults.push(currentItem);
-                    }
-                }
-            });
-
-            // Insert delayed channels after TAB Trackside 2
-            const insertIndex = tracksideIndex !== -1 ? tracksideIndex + 1 : tvResults.length;
-            delayedChannels.forEach((channel, index) => {
-                tvResults.splice(insertIndex + index, 0, channel);
-            });
+        if (line.startsWith('#EXTINF')) {
+            const channelInfo = line.match(/tvg-logo="([^"]+)"/);
+            currentItem = {
+                name: line.split(',')[1],
+                logo: channelInfo ? channelInfo[1] : '',
+                isDiscovery: line.includes('mjh-discovery')
+            };
+			} else if (line.startsWith('http')) {
+				currentItem.url = line;
+				if (query && !currentItem.name.toLowerCase().includes(query)) {
+					return;
+				}
+				tvResults.push(currentItem);
+			}
+		});
 
             // Add Random Station button to the radio category
             radioResults.push({
@@ -446,7 +421,47 @@
                     radioResults.push(currentItem);
                 }
             });
-
+			
+					// Custom sort: Prioritize Auckland, alphabetical order
+			radioResults.sort((a, b) => {
+				const isPriorityA = a.name.toLowerCase().includes('auckland') || 
+									a.name.toLowerCase().includes('more fm network') || 
+									a.name.toLowerCase().includes('chinese radio') || 
+									a.name.toLowerCase().includes('chinese voice');
+				
+				const isPriorityB = b.name.toLowerCase().includes('auckland') || 
+									b.name.toLowerCase().includes('more fm network') || 
+									b.name.toLowerCase().includes('chinese radio') || 
+									b.name.toLowerCase().includes('chinese voice');
+									
+				if (isPriorityA && isPriorityB) {
+					return b.name.localeCompare(a.name); // Inverse alphabetical for priority
+				}
+				
+				if (!isPriorityA && !isPriorityB) {
+					return a.name.localeCompare(b.name); // Regular alphabetical for others
+				}
+				
+				return isPriorityA ? -1 : 1;
+			});
+			
+		// Custom sort for TV: Move mjh-discovery-* in TV channels
+			tvResults.sort((a, b) => {
+				if (a.isDiscovery && b.isDiscovery) {
+					return 0; 
+				}
+				
+				if (a.isDiscovery) {
+					return 1; 
+				}
+				
+				if (b.isDiscovery) {
+					return -1; 
+				}
+				
+				return 0; 
+			});
+			
             const tvResultsBox = document.getElementById('tv-results-box');
             const radioResultsBox = document.getElementById('radio-results-box');
             tvResultsBox.innerHTML = '';
@@ -556,6 +571,13 @@
                     hls.on(Hls.Events.MEDIA_ATTACHED, () => {
                         hls.loadSource(streamUrl);
                     });
+					
+					hls.on(Hls.Events.MANIFEST_PARSED, function () {
+				// Force the highest quality level available
+						hls.currentLevel = hls.levels.length - 1;
+						video.play();
+					});
+					
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                     video.src = streamUrl;
                 }
@@ -616,6 +638,13 @@
 	                hls.loadSource(streamUrl);
 	                audio.play();
 	            });
+				
+				hls.on(Hls.Events.MANIFEST_PARSED, function () {
+				// Force the highest quality level available for all audio streams
+					hls.currentLevel = hls.levels.length - 1;
+					audio.play();
+				});
+				
 	        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
 	            audio.src = streamUrl;
 	            audio.play();
