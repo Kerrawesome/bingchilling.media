@@ -78,6 +78,7 @@
 
         .results, .season-list, .episode-list {
             display: grid;
+		flex-wrap: wrap;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
             overflow-y: auto;
@@ -96,6 +97,7 @@
             justify-content: flex-start;
             align-items: center;
             position: relative;
+		max-width: 150px;
         }
 
         .result-item img {
@@ -544,15 +546,24 @@
             });
             let data = await response.json();
             seasonData = data.seasons.filter(season => season.season_number !== 0);
-            seasonData.forEach(season => {
-                const seasonItem = document.createElement('div');
-                seasonItem.classList.add('season-item');
-                seasonItem.onclick = function() {
-                    seasonNumber = season.season_number;
-                    seasonId = season.id; // Store season ID
-                    showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName);
-                };
+           const currentDate = new Date();
 
+        seasonData.forEach(season => {
+            const seasonAirDate = new Date(season.air_date);
+
+            // Skip if the season is not yet released
+            if (seasonAirDate > currentDate) {
+                return;
+            }
+
+            const seasonItem = document.createElement('div');
+            seasonItem.classList.add('season-item');
+            seasonItem.onclick = function() {
+                seasonNumber = season.season_number;
+                seasonId = season.id; // Store season ID
+                showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName);
+            };
+		
                 if (season.poster_path) {
                     const seasonImage = document.createElement('img');
                     seasonImage.src = 'https://image.tmdb.org/t/p/original' + season.poster_path;
@@ -618,14 +629,23 @@
             });
             let data = await response.json();
             seasonData = data;
-            data.episodes.forEach(episode => {
-                const episodeItem = document.createElement('div');
-                episodeItem.classList.add('episode-item');
-                episodeItem.onclick = function() {
-                    episodeNumber = episode.episode_number;
-                    episodeId = episode.id; // Store episode ID
-                    showEmbeddedVidSrc();
-                };
+            const currentDate = new Date();
+
+        data.episodes.forEach(episode => {
+            const episodeAirDate = new Date(episode.air_date);
+
+            // Skip if the episode is not yet released
+            if (episodeAirDate > currentDate) {
+                return;
+            }
+
+            const episodeItem = document.createElement('div');
+            episodeItem.classList.add('episode-item');
+            episodeItem.onclick = function() {
+                episodeNumber = episode.episode_number;
+                episodeId = episode.id; // Store episode ID
+                showEmbeddedVidSrc();
+            };
 
                 const episodeImage = document.createElement('img');
                 episodeImage.src = 'https://image.tmdb.org/t/p/original' + episode.still_path;
