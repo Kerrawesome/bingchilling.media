@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,8 +18,8 @@
             border: 1px solid #ccc;
             padding: 10px;
             margin-top: 10px;
-            overflow-y: visible; /* Allow full height as needed */
-            max-height: none; /* Remove height restriction */
+            overflow-y: visible;
+            max-height: none;
             position: relative;
             display: none;
         }
@@ -26,7 +27,7 @@
         #loadingIndicator {
             display: none;
         }
-		
+
         .code-style {
             font-family: monospace;
             background-color: #f4f4f4;
@@ -40,7 +41,7 @@
 
         #readerContainer {
             display: none;
-			border: 1px solid #ccc;
+            border: 1px solid #ccc;
             width: 100%;
             max-width: 100vw;
             overflow-x: auto;
@@ -65,7 +66,7 @@
             gap: 10px;
             align-items: center;
             margin-top: 10px;
-			margin-bottom: 10px;
+            margin-bottom: 10px;
         }
 
         .dynamic-width-input {
@@ -123,6 +124,9 @@
 
     <div id="readerButtonContainer" class="controls-container">
         <button id="readerButton">Reader</button>
+        <input type="checkbox" id="getPngCheckbox" class="checkbox-with-padding">
+        <label for="getPngCheckbox">Get as <span class="code-style">.png</span></label>
+        <span id="resolutionLabel" class="code-style" style="display:none;"></span>
     </div>
 
     <div id="readerControls" class="controls-container">
@@ -151,17 +155,20 @@
 
         function clearOutputs() {
             document.getElementById('tokenOutput').textContent = '';
-            document.getElementById('accessTokenOutput').textContent = '';
-            document.getElementById('output').textContent = '';
-            document.getElementById('linksContainer').innerHTML = '';
-            document.getElementById('tokenHeader').style.display = 'none';
-            document.getElementById('accessTokenHeader').style.display = 'none';
-            document.getElementById('qualitySelectorContainer').style.display = 'none';
-            document.getElementById('checkMessage').textContent = '';
-            document.getElementById('readerContainer').style.display = 'none';
-            document.getElementById('readerControls').style.display = 'none';
-            document.getElementById('readerButtonContainer').style.display = 'none';
-        }
+			document.getElementById('accessTokenOutput').textContent = '';
+			document.getElementById('output').textContent = '';
+			document.getElementById('linksContainer').innerHTML = '';
+			document.getElementById('tokenHeader').style.display = 'none';
+			document.getElementById('accessTokenHeader').style.display = 'none';
+			document.getElementById('qualitySelectorContainer').style.display = 'none';
+			document.getElementById('checkMessage').textContent = '';
+			document.getElementById('readerContainer').style.display = 'none';
+			document.getElementById('readerControls').style.display = 'none';
+			document.getElementById('readerButtonContainer').style.display = 'none';
+			document.getElementById('resolutionLabel').style.display = 'none';
+			document.getElementById('getPngCheckbox').style.display = 'inline';
+			document.querySelector('label[for="getPngCheckbox"]').style.display = 'inline';
+				}
 
         function formatDateToYYYYMMDD(date) {
             const d = new Date(date);
@@ -239,10 +246,11 @@
             const formattedDate = formatDateToYYYYMMDD(issueDate);
             const issueId = `${cid}${formattedDate}${issueSuffix}`;
             const selectedQuality = document.getElementById('qualitySelector').value;
+            const appendPng = document.getElementById('getPngCheckbox').checked ? '&format=png' : '';
             pageUrls = pageKeys.map((page) => {
                 const pageNumber = page.PageNumber;
                 const pageKey = page.Key;
-                return `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}${selectedQuality}&ticket=${pageKey}`;
+                return `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}${selectedQuality}&ticket=${pageKey}${appendPng}`;
             });
 
             updatePageLinks();
@@ -252,9 +260,10 @@
 
         function updatePageLinks() {
             const selectedQuality = document.getElementById('qualitySelector').value;
+            const appendPng = document.getElementById('getPngCheckbox').checked ? '&format=png' : '';
             document.getElementById('checkMessage').textContent = '';
             const pageLinksHtml = pageUrls.map(url => {
-                const updatedUrl = url.replace(/(&width=\d+|&height=\d+)/, selectedQuality);
+                const updatedUrl = url.replace(/(&width=\d+|&height=\d+)/, selectedQuality) + appendPng;
                 return `<a href="${updatedUrl}" target="_blank" class="thumb">${updatedUrl}</a>`;
             }).join('<br>');
             document.getElementById('linksContainer').innerHTML = pageLinksHtml;
@@ -270,6 +279,10 @@
             document.getElementById('linksContainer').style.display = 'none';
             document.getElementById('readerContainer').style.display = 'block';
             document.getElementById('readerControls').style.display = 'flex';
+            // Hide the checkbox and label
+            document.getElementById('getPngCheckbox').style.display = 'none';
+            document.querySelector('label[for="getPngCheckbox"]').style.display = 'none';
+            document.getElementById('resolutionLabel').style.display = 'inline';
             loadPage(currentPage);
         }
 
@@ -279,6 +292,14 @@
                 document.getElementById('readerImage').src = pageUrl;
                 document.getElementById('pageIndicator').value = pageNumber;
                 document.getElementById('totalPages').textContent = ` / ${pageUrls.length}`;
+
+                // Display current resolution in the reader
+                const img = new Image();
+                img.src = pageUrl;
+                img.onload = function () {
+                    document.getElementById('resolutionLabel').textContent = `${img.width} x ${img.height}`;
+                    document.getElementById('resolutionLabel').style.display = 'inline';
+                };
             }
         }
 
@@ -292,7 +313,6 @@
 
             if (cid) {
                 if (issueDate) {
-                    // If an issue date is provided, include it in the URL
                     url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}&issueDate=${formatDateToYYYYMMDD(issueDate)}`;
                 } else {
                     url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}`;
@@ -338,6 +358,7 @@
 
         document.getElementById('qualitySelector').addEventListener('change', updatePageLinks);
         document.getElementById('readerButton').addEventListener('click', showReader);
+        document.getElementById('getPngCheckbox').addEventListener('change', updatePageLinks);
 
         document.getElementById('prevPage').addEventListener('click', () => {
             if (currentPage > 1) {
@@ -362,36 +383,15 @@
         });
 
         document.querySelectorAll('.dynamic-width-input').forEach(input => adjustInputWidth(input));
-		
-		// Get references to elements
-    const qualitySelector = document.getElementById('qualitySelector');
-    const readerContainer = document.getElementById('readerContainer');
-    const readerImage = document.getElementById('readerImage');
 
-    // Listen for changes on the quality dropdown
-    qualitySelector.addEventListener('change', () => {
-        // Update the page URLs to reflect the new quality setting
-        updatePageLinks();
-
-        // If the reader is currently open, reload the current page with the updated URL
-        if (readerContainer.style.display === 'block') {
-            loadPage(currentPage);
-        }
-    });
-
-    // Function to update the reader image with the selected page and quality
-    function loadPage(pageNumber) {
-        const selectedQuality = document.getElementById('qualitySelector').value;
-        let pageUrl = pageUrls[pageNumber - 1];
-        if (pageUrl) {
-            // Update the URL with the selected quality
-            pageUrl = pageUrl.replace(/(&width=\d+|&height=\d+)/, selectedQuality);
-            readerImage.src = pageUrl;
-            document.getElementById('pageIndicator').value = pageNumber;
-            document.getElementById('totalPages').textContent = ` / ${pageUrls.length}`;
-        }
-    }
-	
+        // Listen for changes on the quality dropdown and reload reader if open
+        document.getElementById('qualitySelector').addEventListener('change', () => {
+            updatePageLinks();
+            if (document.getElementById('readerContainer').style.display === 'block') {
+                loadPage(currentPage);
+            }
+        });
     </script>
 </body>
+
 </html>
