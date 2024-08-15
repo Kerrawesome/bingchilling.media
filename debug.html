@@ -328,18 +328,26 @@
             }
         }
 
-        document.getElementById('fetchIssueInfo').addEventListener('click', async () => {
-            clearOutputs();
-            await fetchBearerToken();
-            const cid = document.getElementById('cid').value;
-            const issueDate = document.getElementById('issueDate').value;
-            if (cid && issueDate) {
-                const url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}&issueDate=${formatDateToYYYYMMDD(issueDate)}`;
-                await makeApiRequest(url);
-            } else {
-                alert('Please enter both CID and Issue Date');
-            }
-        });
+       document.getElementById('fetchIssueInfo').addEventListener('click', async () => {
+    clearOutputs();
+    await fetchBearerToken();
+    const cid = document.getElementById('cid').value;
+    const issueDate = document.getElementById('issueDate').value;
+
+    let url;
+    
+    if (cid) {
+        if (issueDate) {
+            // If an issue date is provided, include it in the URL
+            url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}&issueDate=${formatDateToYYYYMMDD(issueDate)}`;
+        } else {
+            url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}`;
+        }
+        await makeApiRequest(url);
+    } else {
+        alert('Please enter CID');
+    }
+});
 
         document.getElementById('fetchCatalog').addEventListener('click', async () => {
             clearOutputs();
