@@ -386,24 +386,34 @@
             document.body.appendChild(promptBox);
         }
 
-        function fetchFrontPageImage(newspaperCode, date, container) {
-            const issueId = getIssueIdForDate(newspaperCode, date);
-            const accessToken = primaryAccessToken;
-            const frontPageUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
-
-            fetch(frontPageUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const frontPageKey = data.PageKeys.find(page => page.PageNumber === 1).Key;
-                    const imgElement = document.createElement('img');
-                    imgElement.classList.add('front-page-img');
-                    imgElement.style.borderRadius = '5px'; // Decrease the rounding slightly
-                    const pageUrl = `https://i.prcdn.co/img?file=${issueId}&page=1&height=2448&ticket=${frontPageKey}`;
-                    imgElement.src = pageUrl;
-                    container.insertBefore(imgElement, container.firstChild);
-                })
-                .catch(error => console.error('Error fetching front page image:', error));
-        }
+	       function fetchFrontPageImage(newspaperCode, date, container) {
+	    const issueId = getIssueIdForDate(newspaperCode, date);
+	    const accessToken = primaryAccessToken;
+	    const frontPageUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
+	
+	    // Determine width and height based on publication code
+	    let width, height;
+	    if (newspaperCode === '1126' || newspaperCode === '1211') {
+	        width = 2060;
+	        height = 2884;
+	    } else if (newspaperCode === '7478' || newspaperCode === '1759') {
+	        width = 1368;
+	        height = 2448;
+	    }
+	
+	    fetch(frontPageUrl)
+	        .then(response => response.json())
+	        .then(data => {
+	            const frontPageKey = data.PageKeys.find(page => page.PageNumber === 1).Key;
+	            const imgElement = document.createElement('img');
+	            imgElement.classList.add('front-page-img');
+	            imgElement.style.borderRadius = '5px'; // Decrease the rounding slightly
+	            const pageUrl = `https://i.prcdn.co/img?file=${issueId}&page=1&width=${width}&height=${height}&ticket=${frontPageKey}`;
+	            imgElement.src = pageUrl;
+	            container.insertBefore(imgElement, container.firstChild);
+	        })
+	        .catch(error => console.error('Error fetching front page image:', error));
+	}
 
         function showEmbeddedReader(newspaperCode, aspectRatio) {
             const previousPromptId = currentPrompt;
@@ -500,52 +510,63 @@
             }
         }
 
-        function loadImage(url) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.src = url;
-                img.onload = () => resolve(img);
-                img.onerror = () => reject();
-            });
-        }
-
-			async function loadPage(issueId, pageNumber) {
-			const accessToken = primaryAccessToken;
-			const keyUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
-
-			try {
-				const response = await fetch(keyUrl);
-				const data = await response.json();
-				const pageKey = data.PageKeys.find(page => page.PageNumber === pageNumber).Key;
-
-				const widthUrl = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&width=2060&ticket=${pageKey}`;
-				const heightUrl = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&height=2448&ticket=${pageKey}`;
-
-				// Load both images in parallel
-				const [widthImage, heightImage] = await Promise.all([
-					loadImage(widthUrl).catch(() => null),
-					loadImage(heightUrl).catch(() => null)
-				]);
-
-				let selectedImage;
-
-				if (widthImage && heightImage) {
-					const widthSize = widthImage.naturalWidth * widthImage.naturalHeight;
-					const heightSize = heightImage.naturalWidth * heightImage.naturalHeight;
-
-					selectedImage = widthSize > heightSize ? widthImage.src : heightImage.src;
-				} else {
-					selectedImage = widthImage ? widthImage.src : heightImage.src;
-				}
-
-				const img = document.getElementById('newspaper-page');
-				img.src = selectedImage;
-				document.getElementById('page-number').max = data.PageKeys.length;
-				document.getElementById('page-number').dataset.current = pageNumber;
-			} catch (error) {
-				console.error('Error fetching page key:', error);
-			}
-		}
+	        function loadImage(url) {
+	            return new Promise((resolve, reject) => {
+	                const img = new Image();
+	                img.src = url;
+	                img.onload = () => resolve(img);
+	                img.onerror = () => reject();
+	            });
+	        }
+	
+				async function loadPage(issueId, pageNumber) {
+	    const accessToken = primaryAccessToken;
+	    const keyUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
+	
+	    try {
+	        const response = await fetch(keyUrl);
+	        const data = await response.json();
+	        const pageKey = data.PageKeys.find(page => page.PageNumber === pageNumber).Key;
+	
+	        // Determine width and height based on publication code
+	        let width, height;
+	        if (issueId.startsWith('1126') || issueId.startsWith('1211')) {
+	            width = 2060;
+	            height = 2884;
+	        } else if (issueId.startsWith('7478') || issueId.startsWith('1759')) {
+	            width = 1368;
+	            height = 2448;
+	        }
+	
+	        // Generate URLs with the correct width and height
+	        const widthUrl = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&width=${width}&ticket=${pageKey}`;
+	        const heightUrl = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&height=${height}&ticket=${pageKey}`;
+	
+	        // Load both images in parallel
+	        const [widthImage, heightImage] = await Promise.all([
+	            loadImage(widthUrl).catch(() => null),
+	            loadImage(heightUrl).catch(() => null)
+	        ]);
+	
+	        let selectedImage;
+	
+	        if (widthImage && heightImage) {
+	            const widthSize = widthImage.naturalWidth * widthImage.naturalHeight;
+	            const heightSize = heightImage.naturalWidth * heightImage.naturalHeight;
+	
+	            selectedImage = widthSize > heightSize ? widthImage.src : heightImage.src;
+	        } else {
+	            selectedImage = widthImage ? widthImage.src : heightImage.src;
+	        }
+	
+	        const img = document.getElementById('newspaper-page');
+	        img.src = selectedImage;
+	        document.getElementById('page-number').max = data.PageKeys.length;
+	        document.getElementById('page-number').dataset.current = pageNumber;
+	    } catch (error) {
+	        console.error('Error fetching page key:', error);
+	    }
+	}
 
         function createFooter(isMainPage, randomFunction, isFinalPage = false) {
             const footer = document.createElement('div');
