@@ -11,15 +11,22 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-		
-		#linksContainer {
-			word-wrap: break-word;
-		}
+
+        #linksContainer {
+            word-wrap: break-word;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            overflow-y: visible; /* Allow full height as needed */
+            max-height: none; /* Remove height restriction */
+            position: relative;
+            display: none;
+        }
 
         #loadingIndicator {
             display: none;
         }
-
+		
         .code-style {
             font-family: monospace;
             background-color: #f4f4f4;
@@ -33,10 +40,11 @@
 
         #readerContainer {
             display: none;
+			border: 1px solid #ccc;
             width: 100%;
             max-width: 100vw;
             overflow-x: auto;
-			padding-top: 10px;
+            padding-top: 10px;
         }
 
         #readerImage {
@@ -48,10 +56,6 @@
             width: 60px;
         }
 
-        #scaleInput {
-            width: 80px;
-        }
-
         #pageIndicator {
             width: 80px;
         }
@@ -61,15 +65,20 @@
             gap: 10px;
             align-items: center;
             margin-top: 10px;
+			margin-bottom: 10px;
         }
 
         .dynamic-width-input {
             width: auto;
             min-width: 50px;
         }
+
+        .dropdown {
+            margin-top: 10px;
+        }
     </style>
 </head>
-    
+
 <body>
     <h1>PressReader Tools</h1>
     <h3>By Kerrawesome</h3>
@@ -97,18 +106,20 @@
     <h2>API Output</h2>
     <pre id="output" class="api-output"></pre>
 
-    <div id="scaleContainer" style="display:none;">
-        <label for="scaleInput">Scale:</label>
-        <input type="number" id="scaleInput" name="scaleInput" value="300" class="dynamic-width-input" min="1">
-        <button id="checkLinks">Check</button>
-        <label class="checkbox-with-padding">
-            <input type="checkbox" id="formatCheckbox">
-            Get links as <span class="code-style">.png</span>
-        </label>
+    <div id="qualitySelectorContainer" class="dropdown" style="display:none;">
+        <label for="qualitySelector">Quality:</label>
+        <select id="qualitySelector" name="qualitySelector">
+            <option disabled>Standard</option>
+            <option value="&width=1368">Width: 1368</option>
+            <option value="&height=2448">Height: 2448</option>
+            <option disabled>High Quality</option>
+            <option value="&width=2060">Width: 2060</option>
+            <option value="&height=2884">Height: 2884</option>
+        </select>
     </div>
 
-	<div id="checkMessage"></div>
-	<div id="loadingIndicator">Loading...</div>
+    <div id="checkMessage"></div>
+    <div id="loadingIndicator">Loading...</div>
 
     <div id="readerButtonContainer" class="controls-container">
         <button id="readerButton">Reader</button>
@@ -120,13 +131,13 @@
         <span id="totalPages"></span>
         <button id="nextPage">Next</button>
     </div>
-	
-	<div id="linksContainer"></div>
+
+    <div id="linksContainer"></div>
 
     <div id="readerContainer">
         <img id="readerImage" src="" alt="Reader Image">
     </div>
-    
+
     <script>
         const primaryAccessToken = '_C6WK4jD09pQHoU7WOZG-EBYjytNutTUwP6umGmBEm5I06heGAxOZKSs39GFJrAEsAQ0FSfMX6IiBC4hJPWLMvqX_cmsCDLTdhQIqy8Z-Vs!';
         const secondaryAccessToken = '7lykuJZcSDUnlAxrCh89oET_SIwEwQK3jDRuibpFI8yb2aKadg_W2LSSlf8kO6EDFFBpcejU9ANbN59GiAQlV9sjVMeMTSyFafYCK6beouM!';
@@ -145,9 +156,8 @@
             document.getElementById('linksContainer').innerHTML = '';
             document.getElementById('tokenHeader').style.display = 'none';
             document.getElementById('accessTokenHeader').style.display = 'none';
-            document.getElementById('scaleContainer').style.display = 'none';
+            document.getElementById('qualitySelectorContainer').style.display = 'none';
             document.getElementById('checkMessage').textContent = '';
-            document.getElementById('formatCheckbox').checked = false;
             document.getElementById('readerContainer').style.display = 'none';
             document.getElementById('readerControls').style.display = 'none';
             document.getElementById('readerButtonContainer').style.display = 'none';
@@ -228,86 +238,32 @@
         async function fetchAndDisplayPages(cid, issueDate, issueSuffix, pageKeys) {
             const formattedDate = formatDateToYYYYMMDD(issueDate);
             const issueId = `${cid}${formattedDate}${issueSuffix}`;
+            const selectedQuality = document.getElementById('qualitySelector').value;
             pageUrls = pageKeys.map((page) => {
                 const pageNumber = page.PageNumber;
                 const pageKey = page.Key;
-                return `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&scale=300&ticket=${pageKey}`;
+                return `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}${selectedQuality}&ticket=${pageKey}`;
             });
 
             updatePageLinks();
-            document.getElementById('scaleContainer').style.display = 'block';
+            document.getElementById('qualitySelectorContainer').style.display = 'block';
             document.getElementById('readerButtonContainer').style.display = 'flex';
         }
 
         function updatePageLinks() {
-            const scale = document.getElementById('scaleInput').value;
-            const formatCheckbox = document.getElementById('formatCheckbox').checked;
+            const selectedQuality = document.getElementById('qualitySelector').value;
             document.getElementById('checkMessage').textContent = '';
             const pageLinksHtml = pageUrls.map(url => {
-                let updatedUrl = url.replace(/scale=\d+/, `scale=${scale}`);
-                if (formatCheckbox) {
-                    updatedUrl += '&format=png';
-                }
+                const updatedUrl = url.replace(/(&width=\d+|&height=\d+)/, selectedQuality);
                 return `<a href="${updatedUrl}" target="_blank" class="thumb">${updatedUrl}</a>`;
             }).join('<br>');
             document.getElementById('linksContainer').innerHTML = pageLinksHtml;
+            updateReaderLinks();
         }
 
-        function checkLinks() {
-            const checkMessage = document.getElementById('checkMessage');
-            checkMessage.textContent = '';
-            document.getElementById('loadingIndicator').style.display = 'block';
-
-            let successfulChecks = 0;
-            const totalChecks = pageUrls.length;
-            let completedChecks = 0;
-            let hasFailed = false;
-
-            function handleCheckCompletion(success) {
-                completedChecks++;
-                if (success) {
-                    successfulChecks++;
-                } else {
-                    hasFailed = true;
-                }
-
-                if (completedChecks === totalChecks) {
-                    if (hasFailed) {
-                        checkMessage.textContent = 'Some links failed.';
-                    } else {
-                        checkMessage.textContent = 'All links succeeded.';
-                    }
-                    document.getElementById('loadingIndicator').style.display = 'none';
-                }
-            }
-
-            const scale = document.getElementById('scaleInput').value;
-            const formatCheckbox = document.getElementById('formatCheckbox').checked;
-            const updatedPageUrls = pageUrls.map(url => {
-                let updatedUrl = url.replace(/scale=\d+/, `scale=${scale}`);
-                if (formatCheckbox) {
-                    updatedUrl += '&format=png';
-                }
-                return updatedUrl;
-            });
-
-            updatedPageUrls.forEach(url => {
-                const img = new Image();
-                const timeout = setTimeout(() => {
-                    img.src = ''; // Cancel the image load
-                    handleCheckCompletion(false);
-                }, 5000); // Timeout after 5 seconds
-
-                img.onload = () => {
-                    clearTimeout(timeout);
-                    handleCheckCompletion(true);
-                };
-                img.onerror = () => {
-                    clearTimeout(timeout);
-                    handleCheckCompletion(false);
-                };
-                img.src = url;
-            });
+        function updateReaderLinks() {
+            const selectedQuality = document.getElementById('qualitySelector').value;
+            pageUrls = pageUrls.map(url => url.replace(/(&width=\d+|&height=\d+)/, selectedQuality));
         }
 
         function showReader() {
@@ -318,36 +274,34 @@
         }
 
         function loadPage(pageNumber) {
-            const scale = document.getElementById('scaleInput').value;
             let pageUrl = pageUrls[pageNumber - 1];
             if (pageUrl) {
-                pageUrl = pageUrl.replace(/scale=\d+/, `scale=${scale}`);
                 document.getElementById('readerImage').src = pageUrl;
                 document.getElementById('pageIndicator').value = pageNumber;
                 document.getElementById('totalPages').textContent = ` / ${pageUrls.length}`;
             }
         }
 
-       document.getElementById('fetchIssueInfo').addEventListener('click', async () => {
-    clearOutputs();
-    await fetchBearerToken();
-    const cid = document.getElementById('cid').value;
-    const issueDate = document.getElementById('issueDate').value;
+        document.getElementById('fetchIssueInfo').addEventListener('click', async () => {
+            clearOutputs();
+            await fetchBearerToken();
+            const cid = document.getElementById('cid').value;
+            const issueDate = document.getElementById('issueDate').value;
 
-    let url;
-    
-    if (cid) {
-        if (issueDate) {
-            // If an issue date is provided, include it in the URL
-            url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}&issueDate=${formatDateToYYYYMMDD(issueDate)}`;
-        } else {
-            url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}`;
-        }
-        await makeApiRequest(url);
-    } else {
-        alert('Please enter CID');
-    }
-});
+            let url;
+
+            if (cid) {
+                if (issueDate) {
+                    // If an issue date is provided, include it in the URL
+                    url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}&issueDate=${formatDateToYYYYMMDD(issueDate)}`;
+                } else {
+                    url = `https://ingress.pressreader.com/services/IssueInfo/GetIssueInfoByCid?cid=${cid}`;
+                }
+                await makeApiRequest(url);
+            } else {
+                alert('Please enter CID');
+            }
+        });
 
         document.getElementById('fetchCatalog').addEventListener('click', async () => {
             clearOutputs();
@@ -382,9 +336,7 @@
             }
         });
 
-        document.getElementById('scaleInput').addEventListener('input', updatePageLinks);
-        document.getElementById('checkLinks').addEventListener('click', checkLinks);
-        document.getElementById('formatCheckbox').addEventListener('change', updatePageLinks);
+        document.getElementById('qualitySelector').addEventListener('change', updatePageLinks);
         document.getElementById('readerButton').addEventListener('click', showReader);
 
         document.getElementById('prevPage').addEventListener('click', () => {
@@ -410,6 +362,36 @@
         });
 
         document.querySelectorAll('.dynamic-width-input').forEach(input => adjustInputWidth(input));
+		
+		// Get references to elements
+    const qualitySelector = document.getElementById('qualitySelector');
+    const readerContainer = document.getElementById('readerContainer');
+    const readerImage = document.getElementById('readerImage');
+
+    // Listen for changes on the quality dropdown
+    qualitySelector.addEventListener('change', () => {
+        // Update the page URLs to reflect the new quality setting
+        updatePageLinks();
+
+        // If the reader is currently open, reload the current page with the updated URL
+        if (readerContainer.style.display === 'block') {
+            loadPage(currentPage);
+        }
+    });
+
+    // Function to update the reader image with the selected page and quality
+    function loadPage(pageNumber) {
+        const selectedQuality = document.getElementById('qualitySelector').value;
+        let pageUrl = pageUrls[pageNumber - 1];
+        if (pageUrl) {
+            // Update the URL with the selected quality
+            pageUrl = pageUrl.replace(/(&width=\d+|&height=\d+)/, selectedQuality);
+            readerImage.src = pageUrl;
+            document.getElementById('pageIndicator').value = pageNumber;
+            document.getElementById('totalPages').textContent = ` / ${pageUrls.length}`;
+        }
+    }
+	
     </script>
-</body> 
+</body>
 </html>
