@@ -307,14 +307,6 @@
 
         let currentPrompt;
         let currentIssueId; // Declare currentIssueId globally to update it in the date picker
-        let firstPageScale = {}; // Store the scale for the first page of each issue
-
-        const averageScales = {
-            '1126': 289, // NZ Herald
-            '7478': 211, // Weekend Herald
-            '1211': 279, // Herald on Sunday
-            '1759': 227  // Western Leader
-        };
 
         function createInitialPrompt() {
             if (currentPrompt) {
@@ -406,7 +398,7 @@
                     const imgElement = document.createElement('img');
                     imgElement.classList.add('front-page-img');
                     imgElement.style.borderRadius = '5px'; // Decrease the rounding slightly
-                    const pageUrl = `https://i.prcdn.co/img?file=${issueId}&page=1&scale=200&ticket=${frontPageKey}`;
+                    const pageUrl = `https://i.prcdn.co/img?file=${issueId}&page=1&height=2448&ticket=${frontPageKey}`;
                     imgElement.src = pageUrl;
                     container.insertBefore(imgElement, container.firstChild);
                 })
@@ -473,20 +465,20 @@
             const currentDate = getCurrentDate();
             const latestEditionDate = getLatestEditionDate(currentDate, newspaperCode);
             currentIssueId = getIssueIdForDate(newspaperCode, latestEditionDate);
-            loadPage(currentIssueId, 1, aspectRatio);
+            loadPage(currentIssueId, 1);
 
             // Event listener for date picker change
             datePickerInput.addEventListener('change', (event) => {
                 const selectedDate = new Date(event.target.value);
                 currentIssueId = getIssueIdForDate(newspaperCode, selectedDate);
-                loadPage(currentIssueId, 1, aspectRatio);
+                loadPage(currentIssueId, 1);
                 document.getElementById('page-number').value = '1';
             });
 
             function navigatePage(offset) {
                 const pageNumber = parseInt(pageNumberInput.value.split('/')[0]) + offset;
                 if (pageNumber > 0 && pageNumber <= parseInt(pageNumberInput.max)) {
-                    loadPage(currentIssueId, pageNumber, aspectRatio);
+                    loadPage(currentIssueId, pageNumber);
                     pageNumberInput.value = `${pageNumber}/${pageNumberInput.max}`;
                 }
             }
@@ -503,49 +495,57 @@
             function loadPageForCurrentIssue() {
                 const pageNumber = parseInt(pageNumberInput.value) || parseInt(pageNumberInput.dataset.current);
                 if (pageNumber > 0 && pageNumber <= parseInt(pageNumberInput.max)) {
-                    loadPage(currentIssueId, pageNumber, aspectRatio);
+                    loadPage(currentIssueId, pageNumber);
                 }
             }
         }
 
-        function loadPage(issueId, pageNumber, aspectRatio) {
-            const accessToken = primaryAccessToken;
-            const keyUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
-            fetch(keyUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const pageKey = data.PageKeys.find(page => page.PageNumber === pageNumber).Key;
-                    loadPageWithDecrement(issueId, pageNumber, pageKey, aspectRatio);
-                    document.getElementById('page-number').max = data.PageKeys.length;
-                    document.getElementById('page-number').dataset.current = pageNumber;
-                })
-                .catch(error => console.error('Error fetching page key:', error));
-        }
-
-        function loadImage(scale, issueId, pageNumber, pageKey) {
+        function loadImage(url) {
             return new Promise((resolve, reject) => {
-                let imageUrl = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&scale=${scale}&ticket=${pageKey}`;
-                let img = new Image();
-                img.src = imageUrl;
-                img.onload = () => resolve(scale);
-                img.onerror = () => reject(scale);
+                const img = new Image();
+                img.src = url;
+                img.onload = () => resolve(img);
+                img.onerror = () => reject();
             });
         }
 
-        async function loadPageWithDecrement(issueId, pageNumber, pageKey, aspectRatio) {
-            const maxScale = averageScales[issueId.slice(0, 4)];
-            let scale = maxScale;
-            while (scale > 0) {
-                try {
-                    await loadImage(scale, issueId, pageNumber, pageKey);
-                    const img = document.getElementById('newspaper-page');
-                    img.src = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&scale=${scale}&ticket=${pageKey}`;
-                    break;
-                } catch (failedScale) {
-                    scale--;
-                }
-            }
-        }
+			async function loadPage(issueId, pageNumber) {
+			const accessToken = primaryAccessToken;
+			const keyUrl = `https://ingress.pressreader.com/services/IssueInfo/GetPageKeys?accessToken=${accessToken}&issue=${issueId}`;
+
+			try {
+				const response = await fetch(keyUrl);
+				const data = await response.json();
+				const pageKey = data.PageKeys.find(page => page.PageNumber === pageNumber).Key;
+
+				const widthUrl = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&width=2060&ticket=${pageKey}`;
+				const heightUrl = `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&height=2448&ticket=${pageKey}`;
+
+				// Load both images in parallel
+				const [widthImage, heightImage] = await Promise.all([
+					loadImage(widthUrl).catch(() => null),
+					loadImage(heightUrl).catch(() => null)
+				]);
+
+				let selectedImage;
+
+				if (widthImage && heightImage) {
+					const widthSize = widthImage.naturalWidth * widthImage.naturalHeight;
+					const heightSize = heightImage.naturalWidth * heightImage.naturalHeight;
+
+					selectedImage = widthSize > heightSize ? widthImage.src : heightImage.src;
+				} else {
+					selectedImage = widthImage ? widthImage.src : heightImage.src;
+				}
+
+				const img = document.getElementById('newspaper-page');
+				img.src = selectedImage;
+				document.getElementById('page-number').max = data.PageKeys.length;
+				document.getElementById('page-number').dataset.current = pageNumber;
+			} catch (error) {
+				console.error('Error fetching page key:', error);
+			}
+		}
 
         function createFooter(isMainPage, randomFunction, isFinalPage = false) {
             const footer = document.createElement('div');
