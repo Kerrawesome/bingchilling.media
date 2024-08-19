@@ -313,7 +313,7 @@
         promptBox.appendChild(headingText);
 
         const promptText = document.createElement('p');
-        promptText.innerHTML = 'Watch or <button id="streamButton">stream</button>
+        promptText.innerHTML = 'Watch or <button id="streamButton">stream</button>';
         promptText.style.color = '#ff9800';
         promptBox.appendChild(promptText);
 
@@ -321,6 +321,10 @@
 
         document.getElementById('streamButton').onclick = function() {
             window.location.href = 'broadcast.html';
+        };
+
+        document.getElementById('readButton').onclick = function() {
+            window.location.href = '';
         };
 
         const input = document.createElement('input');
