@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
+	<link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
     <title>PressReader Tools</title>
     <style>
         .token-output,
@@ -77,6 +80,16 @@
         .dropdown {
             margin-top: 10px;
         }
+		
+		* {
+          scrollbar-width: none; /* For Firefox */
+          -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+        }
+
+        *::-webkit-scrollbar {
+          display: none; /* For WebKit browsers (Chrome, Safari) */
+        }
+		
     </style>
 </head>
 
