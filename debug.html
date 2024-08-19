@@ -85,15 +85,32 @@
     <h3>By Kerrawesome</h3>
     <p>These tools are for educational purposes only.<br>All content displayed is copyright and remains the property of PressReader Inc.</p>
 
-    <label for="cid">CID:</label>
-    <input type="text" id="cid" name="cid" class="dynamic-width-input" oninput="adjustInputWidth(this)"><br><br>
+    <label for="cidDropdown">Select CID:</label>
+    <select id="cidDropdown" name="cidDropdown" class="dropdown">
+        <option value="" selected disabled hidden>Select a CID</option>
+        <option value="1126">1126 The New Zealand Herald [Mon-Fri]</option>
+        <option value="7478">7478 The Weekend Herald [Sat]</option>
+        <option value="1211">1211 The Herald on Sunday [Sun]</option>
+        <option value="1759">1759 Western Leader [Thu]</option>
+        <option value="9658">9658 NZ House & Garden [Monthly]</option>
+        <option value="custom">Custom CID</option>
+    </select>
+    <input type="text" id="cid" name="cid" class="dynamic-width-input" style="display: none;" placeholder="" oninput="adjustInputWidth(this)"><br><br>
 
     <label for="issueDate">Issue Date:</label>
-    <input type="date" id="issueDate" name="issueDate"><br><br>
+    <input type="date" id="issueDate" name="issueDate"><br>
 
-    <label for="issueSuffix">Issue Suffix (default):</label>
-    <input type="text" id="issueSuffix" name="issueSuffix" value="00000000001001" class="dynamic-width-input" oninput="adjustInputWidth(this)"><br><br>
+    <label for="issueSuffixDropdown">Issue Suffix:</label>
+    <select id="issueSuffixDropdown" name="issueSuffixDropdown" class="dropdown">
+        <option value="00000000001001">00000000001001 (default)</option>
+        <option value="00000051001001">00000051001001</option>
+        <option value="custom">Custom Issue Suffix</option>
+    </select>
+    <input type="text" id="issueSuffix" name="issueSuffix" value="00000000001001" class="dynamic-width-input" style="display: none;" placeholder="" oninput="adjustInputWidth(this)"><br><br>
 
+    <button id="directReaderButton">Reader</button>
+
+    <h2>Advanced Tools</h2>
     <button id="fetchIssueInfo">Issue Info</button>
     <button id="fetchCatalog">Catalog</button>
     <button id="fetchPages">Fetch Pages</button>
@@ -116,6 +133,7 @@
             <option disabled>High Quality</option>
             <option value="&width=2060">Width: 2060</option>
             <option value="&height=2884">Height: 2884</option>
+			<option value="custom">Custom Size</option>
         </select>
     </div>
 
@@ -123,7 +141,6 @@
     <div id="loadingIndicator">Loading...</div>
 
     <div id="readerButtonContainer" class="controls-container">
-        <button id="readerButton">Reader</button>
         <input type="checkbox" id="getPngCheckbox" class="checkbox-with-padding">
         <label for="getPngCheckbox">Get as <span class="code-style">.png</span></label>
         <span id="resolutionLabel" class="code-style" style="display:none;"></span>
@@ -149,26 +166,34 @@
         let pageUrls = [];
         let currentPage = 1;
 
+        const cidToScaleMap = {
+            "1126": "&width=2060", // The New Zealand Herald [Mon-Fri]
+            "1211": "&width=2060", // The Herald on Sunday [Sun]
+            "9658": "&height=2884", // NZ House & Garden [Monthly]
+            "7478": "&height=2448", // The Weekend Herald [Sat]
+            "1759": "&height=2448" // Western Leader [Thu]
+        };
+
         function adjustInputWidth(input) {
             input.style.width = (input.value.length + 1) + 'ch';
         }
 
         function clearOutputs() {
             document.getElementById('tokenOutput').textContent = '';
-			document.getElementById('accessTokenOutput').textContent = '';
-			document.getElementById('output').textContent = '';
-			document.getElementById('linksContainer').innerHTML = '';
-			document.getElementById('tokenHeader').style.display = 'none';
-			document.getElementById('accessTokenHeader').style.display = 'none';
-			document.getElementById('qualitySelectorContainer').style.display = 'none';
-			document.getElementById('checkMessage').textContent = '';
-			document.getElementById('readerContainer').style.display = 'none';
-			document.getElementById('readerControls').style.display = 'none';
-			document.getElementById('readerButtonContainer').style.display = 'none';
-			document.getElementById('resolutionLabel').style.display = 'none';
-			document.getElementById('getPngCheckbox').style.display = 'inline';
-			document.querySelector('label[for="getPngCheckbox"]').style.display = 'inline';
-				}
+            document.getElementById('accessTokenOutput').textContent = '';
+            document.getElementById('output').textContent = '';
+            document.getElementById('linksContainer').innerHTML = '';
+            document.getElementById('tokenHeader').style.display = 'none';
+            document.getElementById('accessTokenHeader').style.display = 'none';
+            document.getElementById('qualitySelectorContainer').style.display = 'none';
+            document.getElementById('checkMessage').textContent = '';
+            document.getElementById('readerContainer').style.display = 'none';
+            document.getElementById('readerControls').style.display = 'none';
+            document.getElementById('readerButtonContainer').style.display = 'none';
+            document.getElementById('resolutionLabel').style.display = 'none';
+            document.getElementById('getPngCheckbox').style.display = 'inline';
+            document.querySelector('label[for="getPngCheckbox"]').style.display = 'inline';
+        }
 
         function formatDateToYYYYMMDD(date) {
             const d = new Date(date);
@@ -176,6 +201,15 @@
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}${month}${day}`;
+        }
+
+        function updateQualitySelector(cid) {
+            const qualitySelector = document.getElementById('qualitySelector');
+            if (cidToScaleMap[cid]) {
+                qualitySelector.value = cidToScaleMap[cid];
+            } else {
+                qualitySelector.value = "&width=1368"; // Default option if no match is found
+            }
         }
 
         async function fetchBearerToken() {
@@ -246,33 +280,32 @@
             const formattedDate = formatDateToYYYYMMDD(issueDate);
             const issueId = `${cid}${formattedDate}${issueSuffix}`;
             const selectedQuality = document.getElementById('qualitySelector').value;
-            const appendPng = document.getElementById('getPngCheckbox').checked ? '&format=png' : '';
-            pageUrls = pageKeys.map((page) => {
+
+            pageUrls = pageKeys.map(page => {
                 const pageNumber = page.PageNumber;
                 const pageKey = page.Key;
-                return `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}${selectedQuality}&ticket=${pageKey}${appendPng}`;
+                return {
+                    originalUrl: `https://i.prcdn.co/img?file=${issueId}&page=${pageNumber}&ticket=${pageKey}`,
+                    pageNumber: pageNumber
+                };
             });
 
-            updatePageLinks();
+            updatePageUrls(selectedQuality);
             document.getElementById('qualitySelectorContainer').style.display = 'block';
             document.getElementById('readerButtonContainer').style.display = 'flex';
         }
 
-        function updatePageLinks() {
-            const selectedQuality = document.getElementById('qualitySelector').value;
-            const appendPng = document.getElementById('getPngCheckbox').checked ? '&format=png' : '';
-            document.getElementById('checkMessage').textContent = '';
-            const pageLinksHtml = pageUrls.map(url => {
-                const updatedUrl = url.replace(/(&width=\d+|&height=\d+)/, selectedQuality) + appendPng;
-                return `<a href="${updatedUrl}" target="_blank" class="thumb">${updatedUrl}</a>`;
-            }).join('<br>');
-            document.getElementById('linksContainer').innerHTML = pageLinksHtml;
-            updateReaderLinks();
+        function updatePageUrls(selectedQuality) {
+            pageUrls.forEach(page => {
+                page.currentUrl = `${page.originalUrl}${selectedQuality}${document.getElementById('getPngCheckbox').checked ? '&format=png' : ''}`;
+            });
+            updatePageLinks();
         }
 
-        function updateReaderLinks() {
-            const selectedQuality = document.getElementById('qualitySelector').value;
-            pageUrls = pageUrls.map(url => url.replace(/(&width=\d+|&height=\d+)/, selectedQuality));
+        function updatePageLinks() {
+            const pageLinksHtml = pageUrls.map(page => `<a href="${page.currentUrl}" target="_blank">${page.currentUrl}</a>`).join('<br>');
+            document.getElementById('linksContainer').innerHTML = pageLinksHtml;
+            loadPage(currentPage);
         }
 
         function showReader() {
@@ -287,15 +320,15 @@
         }
 
         function loadPage(pageNumber) {
-            let pageUrl = pageUrls[pageNumber - 1];
-            if (pageUrl) {
-                document.getElementById('readerImage').src = pageUrl;
+            const selectedPage = pageUrls.find(page => page.pageNumber === pageNumber);
+            if (selectedPage) {
+                document.getElementById('readerImage').src = selectedPage.currentUrl;
                 document.getElementById('pageIndicator').value = pageNumber;
                 document.getElementById('totalPages').textContent = ` / ${pageUrls.length}`;
 
                 // Display current resolution in the reader
                 const img = new Image();
-                img.src = pageUrl;
+                img.src = selectedPage.currentUrl;
                 img.onload = function () {
                     document.getElementById('resolutionLabel').textContent = `${img.width} x ${img.height}`;
                     document.getElementById('resolutionLabel').style.display = 'inline';
@@ -303,10 +336,65 @@
             }
         }
 
+        document.getElementById('cidDropdown').addEventListener('change', () => {
+            const cidDropdown = document.getElementById('cidDropdown');
+            const cidInput = document.getElementById('cid');
+            const selectedCid = cidDropdown.value;
+
+            if (selectedCid === 'custom') {
+                cidInput.style.display = 'inline';
+            } else {
+                cidInput.style.display = 'none';
+            }
+
+            // Update quality based on CID selection
+            updateQualitySelector(selectedCid);
+        });
+
+        document.getElementById('issueSuffixDropdown').addEventListener('change', () => {
+            const issueSuffixDropdown = document.getElementById('issueSuffixDropdown');
+            const issueSuffixInput = document.getElementById('issueSuffix');
+            if (issueSuffixDropdown.value === 'custom') {
+                issueSuffixInput.style.display = 'inline';
+            } else {
+                issueSuffixInput.style.display = 'none';
+                issueSuffixInput.value = issueSuffixDropdown.value;
+            }
+        });
+
+        document.getElementById('directReaderButton').addEventListener('click', async () => {
+            clearOutputs();
+            document.getElementById('linksContainer').style.display = 'none';
+            document.getElementById('readerControls').style.display = 'none';
+            const cidDropdown = document.getElementById('cidDropdown');
+            const cid = cidDropdown.value === 'custom' ? document.getElementById('cid').value : cidDropdown.value;
+            const issueDate = document.getElementById('issueDate').value;
+            const issueSuffix = document.getElementById('issueSuffix').value;
+
+            if (!cid || !issueDate || !issueSuffix) {
+                alert('Please enter CID, Issue Date, and Issue Suffix');
+                return;
+            }
+
+            let pageKeys = await fetchPageKeys(primaryAccessToken, cid, issueDate, issueSuffix);
+
+            if (!pageKeys || pageKeys.length === 0) {
+                pageKeys = await fetchPageKeys(secondaryAccessToken, cid, issueDate, issueSuffix);
+            }
+
+            if (pageKeys && pageKeys.length > 0) {
+                await fetchAndDisplayPages(cid, issueDate, issueSuffix, pageKeys);
+                showReader();
+            } else {
+                alert('Failed to fetch page keys with both primary and secondary access tokens');
+            }
+        });
+
         document.getElementById('fetchIssueInfo').addEventListener('click', async () => {
             clearOutputs();
             await fetchBearerToken();
-            const cid = document.getElementById('cid').value;
+            const cidDropdown = document.getElementById('cidDropdown');
+            const cid = cidDropdown.value === 'custom' ? document.getElementById('cid').value : cidDropdown.value;
             const issueDate = document.getElementById('issueDate').value;
 
             let url;
@@ -334,7 +422,8 @@
             clearOutputs();
             document.getElementById('linksContainer').style.display = 'block';
             document.getElementById('readerControls').style.display = 'none';
-            const cid = document.getElementById('cid').value;
+            const cidDropdown = document.getElementById('cidDropdown');
+            const cid = cidDropdown.value === 'custom' ? document.getElementById('cid').value : cidDropdown.value;
             const issueDate = document.getElementById('issueDate').value;
             const issueSuffix = document.getElementById('issueSuffix').value;
 
@@ -356,9 +445,13 @@
             }
         });
 
-        document.getElementById('qualitySelector').addEventListener('change', updatePageLinks);
-        document.getElementById('readerButton').addEventListener('click', showReader);
-        document.getElementById('getPngCheckbox').addEventListener('change', updatePageLinks);
+        document.getElementById('qualitySelector').addEventListener('change', () => {
+            updatePageUrls(document.getElementById('qualitySelector').value);
+        });
+
+        document.getElementById('getPngCheckbox').addEventListener('change', () => {
+            updatePageUrls(document.getElementById('qualitySelector').value);
+        });
 
         document.getElementById('prevPage').addEventListener('click', () => {
             if (currentPage > 1) {
@@ -386,7 +479,7 @@
 
         // Listen for changes on the quality dropdown and reload reader if open
         document.getElementById('qualitySelector').addEventListener('change', () => {
-            updatePageLinks();
+            updatePageUrls(document.getElementById('qualitySelector').value);
             if (document.getElementById('readerContainer').style.display === 'block') {
                 loadPage(currentPage);
             }
