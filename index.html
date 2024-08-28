@@ -863,25 +863,25 @@
         nextEpisodeButton.classList.add('disabled');
     }
 }
-// Function to check if the iframe is in fullscreen mode
-function checkFullscreen() {
-    const iframeContainer = document.querySelector('.iframe-container');
-    const iframe = document.getElementById('video-iframe');
-
-    if (document.fullscreenElement === iframeContainer || document.fullscreenElement === iframe) {
-        iframeContainer.style.borderRadius = '0';
-        iframe.style.borderRadius = '0';
-    } else {
-        iframeContainer.style.borderRadius = '10px';
-        iframe.style.borderRadius = '10px';
-    }
-}
-
-// Add event listeners for fullscreen changes
-document.addEventListener('fullscreenchange', checkFullscreen);
-document.addEventListener('webkitfullscreenchange', checkFullscreen); // For Safari
-document.addEventListener('mozfullscreenchange', checkFullscreen); // For Firefox
-document.addEventListener('MSFullscreenChange', checkFullscreen); // For IE/Edge
+	    
+	function checkFullscreen() {
+	    const iframeContainer = document.querySelector('.iframe-container');
+	    const iframe = document.getElementById('video-iframe');
+	
+	    if (document.fullscreenElement === iframeContainer || document.fullscreenElement === iframe) {
+	        iframeContainer.style.borderRadius = '0';
+	        iframe.style.borderRadius = '0';
+	    } else {
+	        iframeContainer.style.borderRadius = '10px';
+	        iframe.style.borderRadius = '10px';
+	    }
+	}
+	
+	document.addEventListener('fullscreenchange', checkFullscreen);
+	document.addEventListener('webkitfullscreenchange', checkFullscreen); // For Safari
+	document.addEventListener('mozfullscreenchange', checkFullscreen); // For Firefox
+	document.addEventListener('MSFullscreenChange', checkFullscreen); // For IE/Edge
+	    
     async function checkNextEpisodeExists(tmdbId, seasonNumber, episodeNumber) {
         try {
             let response = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}/episode/${episodeNumber}?language=en-US`, {
@@ -901,12 +901,13 @@ document.addEventListener('MSFullscreenChange', checkFullscreen); // For IE/Edge
             return false;
         }
     }
-
     window.onload = function() {
         createInitialPrompt();
     };
     </script>
 </head>
+	
 <body>
 </body>
+	
 </html>
