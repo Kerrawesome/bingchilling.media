@@ -757,95 +757,74 @@
     }
 
     async function showEmbeddedVidSrc() {
-        const previousPromptId = currentPrompt;
-        currentPrompt = 'embed-prompt-box';
-        document.getElementById(previousPromptId).remove();
+		const previousPromptId = currentPrompt;
+		currentPrompt = 'embed-prompt-box';
+		document.getElementById(previousPromptId).remove();
 
-        const promptBox = document.createElement('div');
-        promptBox.classList.add('prompt-box');
-        promptBox.id = 'embed-prompt-box';
+		const promptBox = document.createElement('div');
+		promptBox.classList.add('prompt-box');
+		promptBox.id = 'embed-prompt-box';
 
-        const dropdownContainer = document.createElement('div');
-        dropdownContainer.className = 'dropdown-container';
-        promptBox.appendChild(dropdownContainer);
+		const dropdownContainer = document.createElement('div');
+		dropdownContainer.className = 'dropdown-container';
+		promptBox.appendChild(dropdownContainer);
 
-        const sourceSelector = document.createElement('select');
-        sourceSelector.id = 'source-selector';
-        sourceSelector.className = 'dropdown';
-        sourceSelector.innerHTML = `
-            <option value="vidcloud">Vidcloud</option>
-            <option value="megacloud">Megacloud</option>
-        `;
-        sourceSelector.onchange = function() {
-            currentSource = sourceSelector.value;
-            updateIframeSrc();
-        };
-        dropdownContainer.appendChild(sourceSelector);
+		// Add the control buttons next to the iframe
+		const popcornButton = document.createElement('button');
+		popcornButton.className = 'control-button';
+		popcornButton.innerHTML = '🍿';
+		popcornButton.onclick = function() {
+			window.open(document.getElementById('video-iframe').src, '_blank');
+		};
+		dropdownContainer.appendChild(popcornButton);
 
-        // Add the new buttons next to the dropdown
-        const popcornButton = document.createElement('button');
-        popcornButton.className = 'control-button';
-        popcornButton.innerHTML = '🍿';
-        popcornButton.onclick = function() {
-            window.open(document.getElementById('video-iframe').src, '_blank');
-        };
-        dropdownContainer.appendChild(popcornButton);
+		const nextEpisodeButton = document.createElement('button');
+		nextEpisodeButton.className = 'control-button';
+		nextEpisodeButton.id = 'next-episode-button';
+		nextEpisodeButton.style.display = isTvShow ? 'block' : 'none'; // Show only for TV shows
+		nextEpisodeButton.innerHTML = '';
+		nextEpisodeButton.onclick = async function() {
+			const nextEpisode = episodeNumber + 1;
+			let nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
+			if (nextEpisodeData) {
+				episodeNumber = nextEpisode;
+				episodeId = nextEpisodeData.id; // Store next episode ID
+				showEmbeddedVidSrc(); // Load the player with the next episode
+			}
+		};
+		dropdownContainer.appendChild(nextEpisodeButton);
 
-        const nextEpisodeButton = document.createElement('button');
-        nextEpisodeButton.className = 'control-button';
-        nextEpisodeButton.id = 'next-episode-button';
-        nextEpisodeButton.style.display = isTvShow ? 'block' : 'none'; // Show only for TV shows
-        nextEpisodeButton.innerHTML = '';
-        nextEpisodeButton.onclick = async function() {
-            const nextEpisode = episodeNumber + 1;
-            let nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
-            if (nextEpisodeData) {
-                episodeNumber = nextEpisode;
-                episodeId = nextEpisodeData.id; // Store next episode ID
-                showEmbeddedVidSrc(); // Load the player with the next episode
-            }
-        };
-        dropdownContainer.appendChild(nextEpisodeButton);
+		const iframeContainer = document.createElement('div');
+		iframeContainer.className = 'iframe-container';
 
-        const iframeContainer = document.createElement('div');
-        iframeContainer.className = 'iframe-container';
+		const iframe = document.createElement('iframe');
+		iframe.className = 'iframe';
+		iframe.id = 'video-iframe';
+		
+		iframe.allowFullscreen = true;
+		iframeContainer.appendChild(iframe);
+		promptBox.appendChild(iframeContainer);
 
-        const iframe = document.createElement('iframe');
-        iframe.className = 'iframe';
-        iframe.id = 'video-iframe';
-        
-        iframe.allowFullscreen = true;
-        iframeContainer.appendChild(iframe);
-        promptBox.appendChild(iframeContainer);
+		const footer = createFooter(false, null, true); // Indicate it's the final page
+		promptBox.appendChild(footer);
 
-        const footer = createFooter(false, null, true); // Indicate it's the final page
-        promptBox.appendChild(footer);
+		document.body.appendChild(promptBox);
 
-        document.body.appendChild(promptBox);
+		await updateIframeSrc();
+		await updateNextEpisodeButton();
+	}
 
-        await updateIframeSrc();
-        await updateNextEpisodeButton();
-    }
-
-    async function updateIframeSrc() {
-        let videoUrl;
-        let apiUrl = `https://api.braflix.ru/${currentSource}/sources-with-title?title=${encodeURIComponent(showName)}&year=${releaseYear}&mediaType=${isTvShow ? 'tv' : 'movie'}&tmdbId=${tmdbId}`;
-        if (isTvShow) {
-            apiUrl += `&seasonId=${seasonNumber}&episodeId=${episodeNumber}`;
-        }
-        try {
-            let response = await fetch(apiUrl);
-            let videoString = await response.text(); // Handle the response as plain text
-            if (currentSource === 'vidcloud') {
-                videoUrl = `https://rabbitstream.net/v2/embed-4/${videoString}?_debug=true`;
-            } else if (currentSource === 'megacloud') {
-                videoUrl = `https://megacloud.tv/embed-1/e-1/${videoString}?_debug=true`;
-            }
-        } catch (error) {
-            console.error('Error fetching video URL:', error);
-        }
-        document.getElementById('video-iframe').src = videoUrl;
-    }
+	async function updateIframeSrc() {
+		let videoUrl;
+		if (isTvShow) {
+			// Construct URL for TV shows
+			videoUrl = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
+		} else {
+			// Construct URL for movies
+			videoUrl = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
+		}
+		document.getElementById('video-iframe').src = videoUrl;
+	}
 
     async function updateNextEpisodeButton() {
     const nextEpisode = episodeNumber + 1;
