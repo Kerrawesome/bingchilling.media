@@ -189,8 +189,10 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            transform: scale(0.8); 
+	    transform-origin: 0 0;
+	    width: 125%;
+	    height: 125%;
             border: none;
             border-radius: 10px;
         }
@@ -778,11 +780,11 @@
 		};
 		dropdownContainer.appendChild(popcornButton);
 
-		const nextEpisodeButton = document.createElement('button');
+		const nextEpisodeButton = document.createElement('button'); 
 		nextEpisodeButton.className = 'control-button';
 		nextEpisodeButton.id = 'next-episode-button';
 		nextEpisodeButton.style.display = isTvShow ? 'block' : 'none'; // Show only for TV shows
-		nextEpisodeButton.innerHTML = '';
+		nextEpisodeButton.innerHTML = ''; 
 		nextEpisodeButton.onclick = async function() {
 			const nextEpisode = episodeNumber + 1;
 			let nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
@@ -801,7 +803,6 @@
 		iframe.className = 'iframe';
 		iframe.id = 'video-iframe';
 		iframe.allowFullscreen = true;
-	    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
 		iframeContainer.appendChild(iframe);
 		promptBox.appendChild(iframeContainer);
 
@@ -818,10 +819,10 @@
 		let videoUrl;
 		if (isTvShow) {
 			// Construct URL for TV shows
-			videoUrl = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
+			videoUrl = `https://vidsrc.cc/v3/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
 		} else {
 			// Construct URL for movies
-			videoUrl = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
+			videoUrl = `https://vidsrc.cc/v3/embed/movie/${tmdbId}`;
 		}
 		document.getElementById('video-iframe').src = videoUrl;
 	}
