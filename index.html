@@ -801,6 +801,7 @@
 		iframe.className = 'iframe';
 		iframe.id = 'video-iframe';
 		iframe.allowFullscreen = true;
+	    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
 		iframeContainer.appendChild(iframe);
 		promptBox.appendChild(iframeContainer);
 
@@ -817,10 +818,10 @@
 		let videoUrl;
 		if (isTvShow) {
 			// Construct URL for TV shows
-			videoUrl = `https://vidsrc.cc/v3/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
+			videoUrl = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
 		} else {
 			// Construct URL for movies
-			videoUrl = `https://vidsrc.cc/v3/embed/movie/${tmdbId}`;
+			videoUrl = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
 		}
 		document.getElementById('video-iframe').src = videoUrl;
 	}
