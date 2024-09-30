@@ -1,889 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="manifest.json">
     <title>Bing Chilling Media</title>
     <link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
-    <script>
-    function setVh() {
-        let vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-    }
-    window.addEventListener('resize', setVh);
-    window.addEventListener('load', setVh);
-    setVh();
-    </script>
     <style>
+        * {
+            box-sizing: border-box;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
         body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            max-width: 100vw;
+            font-family: 'Roboto';
+            padding-bottom: 20px;
+            text-align: center;
+        }
+
+        .title-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            background-color: #0a0a0a;
+        }
+
+        .title-text {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .title-text h1,
+        .title-text h2,
+        .title-text h3 {
             margin: 0;
-            font-family: 'Roboto', sans-serif;
-            color: #ffffff;
-            overflow-y: auto;
         }
 
-        .prompt-box {
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            width: 90%;
-            max-width: 1000px;
-            position: relative;
-            overflow-y: auto;
-        }
-
-        input {
-            width: calc(100% - 20px);
-            margin-top: 10px;
-            margin-bottom: 10px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #333;
+        .title-image {
+            width: 80px;
+            height: auto;
             border-radius: 5px;
-            background-color: #2e2e2e;
-            color: #ffffff;
-            box-sizing: border-box;
+            margin-top: 20px;
         }
 
-        button {
-            padding: 10px;
-            margin-left: 2px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 10px;
-            background-color: #e68a00;
-            color: #ffffff;
-            transition: background-color 0.3s;
+        .button-container {
+            display: block;
+            margin: 20px auto;
+            width: fit-content;
         }
+ 
+        input[type="text"] {
+			padding: 10px;
+			width: 90vw;
+			border-radius: 5px;
+			border: 1px solid black;
+			background-color: #f4f4f4;
+			text-align: center; /* Center placeholder text */
+			display: block;
+			margin-left: auto;
+			margin-right: auto; /* Ensure it's fully centered */
+		} 
+		
+		input[type="text"] {
+			max-width: 300px; /* Set a smaller max-width */
+			text-align: left; /* Ensure placeholder text is left-aligned */
+		}
 
-        button:hover {
-            background-color: #cc6f00;
-        }
-
-        img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-bottom: 5px;
-        }
-
-        .results, .season-list, .episode-list {
+        .results-container {
             display: grid;
-		flex-wrap: wrap;
-            grid-template-columns: repeat(auto-fill, minmax(150px, auto));
-		align-content: start;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 10px;
-            overflow-y: auto;
-            justify-content: flex-start;
+            padding: 10px;
+            width: 90%;
+            margin: 0 auto;
         }
 
-        .result-item, .season-item, .episode-item {
+        .result-item {
             padding: 10px;
-            background-color: #2e2e2e;
-            border-radius: 10px;
-            text-align: center;
+            background-color: #f4f4f4;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
             align-items: center;
-            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .result-item:hover {
+            background-color: #e0e0e0;
         }
 
         .result-item img {
-            align-self: flex-start; 
+            width: 140px;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
         }
 
-        .item-info h3 {
-            margin: 0;
+        .result-item h3 {
             font-size: 18px;
-            padding-top: 5px;
+			padding-top: 10px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .result-item p {
+            font-size: 16px;
+            margin: 5px 0;
+            text-align: center;
+        }
+
+        /* Tags for release types */
+        .tags {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 5px;
+            border-radius: 5px;
             font-weight: bold;
         }
 
-        .item-info p {
-		padding-top: 5px;
-            margin: 5px 0 0;
-            font-size: 14px;
+        .tag.cam {
+            background-color: red;
+            color: white;
         }
 
-        .footer {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #bbb;
-            text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .tag.web {
+            background-color: green;
+            color: white;
+        }
+
+        .tag.dvd {
+            background-color: blue;
+            color: white;
+        }
+
+        .player-container {
+            padding-left: 20px;
+            padding-right: 20px;
             width: 100%;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-
-        .footer a {
-            color: #6200ee;
-            text-decoration: none;
-        }
-        
-        .centered-image {
-            width: 100px;
-            height: auto;
-            margin-bottom: -10px;
-            margin-top: 0px;
-        }
-
-        .footer-text {
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
             text-align: center;
-            flex-grow: 1;
-            padding: 0 10px; /* Adjust padding to ensure buttons are square */
-        }
-        
-        .back-button, .random-button, .info-button, .sudo-flix-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background-color: #e68a00;
-            color: #ffffff;
-            font-size: 22px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .random-button, .info-button, .sudo-flix-button {
-            margin-left: 10px;
-        }
-
-        .sudo-flix-button img {
-            padding-top: 5px;
-            width: 30px; 
-            border-radius: 5px;
-        }
-
-        .sudo-flix-button:hover {
-            background-color: #cc6f00;
+            display: none;
         }
 
         .iframe-container {
             width: 100%;
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
             border-radius: 10px;
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
             margin-top: 10px;
+			margin-bottom: 10px;
         }
-        
+
         .iframe {
             position: absolute;
             top: 0;
             left: 0;
-	    width: 100%;
-	    height: 100%;
+            width: 100%;
+            height: 100%;
             border: none;
             border-radius: 10px;
         }
 
-	    .iframe-container:fullscreen,
-	.iframe:fullscreen {
-	    border-radius: 0; /* No rounded corners in fullscreen */
-	}
-
-        .dropdown-container {
+        .control-buttons {
+            margin-top: 10px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 10px;
+            justify-content: space-between;
         }
 
-        .dropdown {
-            width: 150px;
+        /* Grid layout for season and episode listings */
+        .list-container,
+        .episode-list-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
             padding: 10px;
-            font-size: 16px;
-            border: 1px solid #333;
-            border-radius: 5px;
-            background-color: #2e2e2e;
-            color: #ffffff;
-            text-align: center;
+            margin: 0 auto;
+            width: 90%;
         }
 
-        .dropdown option {
-            text-align: left;
-        }
-
-        * {
-          scrollbar-width: none; /* For Firefox */
-          -ms-overflow-style: none;  /* For Internet Explorer and Edge */
-        }
-
-        *::-webkit-scrollbar {
-          display: none; /* For WebKit browsers (Chrome, Safari) */
-        }
-        
-        html, body {
-          height: 100%;
-          overflow: auto;
-        }
-
-        .control-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .list-item,
+        .episode-item {
+            background-color: #f4f4f4;
             padding: 10px;
-            margin-left: 10px;
-            font-size: 16px;
+            border-radius: 8px;
             cursor: pointer;
-            border: none;
+            transition: background-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .list-item img,
+        .episode-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .list-item:hover,
+        .episode-item:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* New styling for episode and movie summary */
+        .info-box {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
             border-radius: 10px;
+            text-align: left;
+            background-color: #f9f9f9;
+            display: none;
+        }
+
+        .info-box h2 {
+            margin: 5px 0;
+        }
+
+        .info-box p {
+            margin: 10px 0;
+        }
+
+        .episode-number {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid black;
             background-color: #e68a00;
             color: #ffffff;
-            transition: background-color 0.3s;
+            cursor: pointer;
         }
 
-        .control-button:hover {
+        button:hover {
             background-color: #cc6f00;
         }
-		
-		.control-button.disabled {
-		background-color: #555;
-		cursor: not-allowed;
-		}
-
-        .codeblock {
-            font-family: monospace;
-            background-color: #333;
-            color: #fff;
-            padding: 2px 4px;
-            border-radius: 4px;
-            margin-left: 5px;
-        }
     </style>
+</head>
+
+<body>
+    <div class="title-container">
+        <img src="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" alt="Ice Cream Icon" class="title-image">
+        <div class="title-text">
+            <h1>Bing Chilling</h1>
+            <h2>Media</h2>
+			<h3>By Kerrawesome</h3>
+        </div>
+    </div>
+
+    <div class="button-container">
+        <input type="text" id="searchBar" placeholder="Search" oninput="debounce(searchTMDB, 300)" />
+    </div>
+
+    <div id="resultsContainer" class="results-container"></div>
+
+    <!-- Season and Episode buttons for TV Shows -->
+    <div id="seasonEpisodeButtons" class="button-container" style="display: none;">
+        <button id="seasonButton" onclick="loadSeasons()">Select Season</button>
+        <button id="nextEpisodeButton" style="display: none;" onclick="loadNextEpisode()">Next Episode <span class="episode-number" id="episodeNumber"></span></button>
+    </div>
+	
+	<div id="playerContainer" class="player-container">
+        <!-- Movie info box for movies -->
+        <div id="movieInfo" class="info-box">
+            <h2 id="movieTitle"></h2>
+            <p id="movieSummary"></p>
+        </div>
+
+        <!-- Episode info box for TV shows -->
+        <div id="episodeInfo" class="info-box">
+            <h2 id="episodeTitle"></h2>
+            <p id="episodeSummary"></p>
+        </div>
+
+        <div class="iframe-container">
+            <iframe id="videoPlayer" class="iframe" sandbox="allow-same-origin allow-scripts allow-forms allow-presentation" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div id="listContainer" class="list-container" style="display: none;"></div>
+
 
     <script>
-    let debounceTimer;
-    let tmdbId;
-    let seasonNumber;
-    let episodeNumber;
-    let isTvShow = false;
-    let currentPrompt;
-    let isMainPage = true; // Add a flag to indicate the main page
-    let showName;
-    let seasonId;
-    let episodeId;
-    let currentSource = 'vidcloud';
-    let releaseYear;
+        let debounceTimer;
+        let currentListings = [];
+        let tmdbId, seasonNumber, episodeNumber;
+        let isTvShow = false;
 
-    function debounce(callback, delay) {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(callback, delay);
-    }
-
-    function createInitialPrompt() {
-        if (currentPrompt) {
-            document.getElementById(currentPrompt).remove();
-        }
-        
-        const promptBox = document.createElement('div');
-        promptBox.classList.add('prompt-box');
-        promptBox.id = 'initial-prompt-box';
-
-        currentPrompt = 'initial-prompt-box';
-
-        const image = document.createElement('img');
-        image.src = 'https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png';
-        image.alt = 'Ice Cream';
-        image.classList.add('centered-image');
-        image.id = 'ice-cream-logo';
-        promptBox.appendChild(image);
-
-        const headingText = document.createElement('h1');
-        headingText.textContent = 'Bing Chilling Media';
-        headingText.style.fontSize = '30px';
-        headingText.style.marginBottom = '20px';
-        headingText.style.color = '#ffffff';
-        promptBox.appendChild(headingText);
-
-        const promptText = document.createElement('p');
-        promptText.innerHTML = 'Watch or <button id="streamButton">stream</button>';
-        promptText.style.color = '#ff9800';
-        promptBox.appendChild(promptText);
-
-        document.body.appendChild(promptBox);
-
-        document.getElementById('streamButton').onclick = function() {
-            window.location.href = 'broadcast.html';
-        };
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.id = 'tmdb-query';
-        input.placeholder = 'Search 🔍';
-        input.addEventListener('input', function() {
-            document.getElementById('ice-cream-logo').style.display = 'none';
-            document.querySelector('.footer').style.display = 'none'; // Hide footer on search
-            debounce(searchSuggestions, 300);
-        });
-        promptBox.appendChild(input);
-
-        const resultsBox = document.createElement('div');
-        resultsBox.id = 'results-box';
-        resultsBox.classList.add('results');
-        promptBox.appendChild(resultsBox);
-
-        const footer = createFooter(true); // Indicate it's the main page
-        promptBox.appendChild(footer);
-
-        document.body.appendChild(promptBox);
-    }
-
-    async function searchSuggestions() {
-        var apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
-        var query = document.getElementById('tmdb-query').value;
-        if (query) {
-            try {
-                let response = await fetch('https://api.themoviedb.org/3/search/multi?query=' + encodeURIComponent(query) + '&include_adult=false&language=en-US&page=1', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + apiKey,
-                        'Accept': 'application/json'
-                    }
-                });
-                let data = await response.json();
-                displayResults(data.results);
-            } catch (error) {
-                console.error('Error fetching data from TMDB: ' + error);
-            }
-        } else {
-            clearResults();
-            document.getElementById('ice-cream-logo').style.display = 'block';
-            document.querySelector('.footer').style.display = 'flex'; // Show footer when search is cleared
-        }
-    }
-
-   async function displayResults(results) {
-    const resultsBox = document.getElementById('results-box');
-    resultsBox.innerHTML = '';
-    if (results && results.length > 0) {
-        for (const result of results) {
-            const name = result.title || result.name;
-            const releaseDate = result.release_date || result.first_air_date || '';
-            const releaseDateObj = new Date(releaseDate);
-            const currentDate = new Date();
-
-            // Skip this item if the release date is in the future
-            if (releaseDateObj > currentDate) {
-                continue;
-            }
-
-            const year = releaseDate.split('-')[0];
-            const posterPath = result.poster_path ? 'https://image.tmdb.org/t/p/original' + result.poster_path : '';
-            const mediaType = result.media_type === 'movie' ? 'Movie' : 'TV Show';
-
-            if (!posterPath) {
-                continue; // Skip listings without an image
-            }
-
-            const resultItem = document.createElement('div');
-            resultItem.classList.add('result-item');
-            resultItem.onclick = async function() {
-                tmdbId = result.id;
-                isTvShow = result.media_type === 'tv';
-                showName = name;
-                releaseYear = year;
-                if (isTvShow) {
-                    showSeasonSelectionPrompt(result.id, name);
-                } else {
-                    await showEmbeddedVidSrc();
-                }
-            };
-
-            if (posterPath) {
-                const resultImage = document.createElement('img');
-                resultImage.src = posterPath;
-                resultItem.appendChild(resultImage);
-            }
-
-            const resultInfo = document.createElement('div');
-            resultInfo.classList.add('item-info');
-
-            const resultTitle = document.createElement('h3');
-            resultTitle.textContent = name;
-            resultInfo.appendChild(resultTitle);
-
-            let tags = mediaType === 'Movie' ? await getReleaseTags(result.id) : mediaType;
-            
-            // Fallback to 'Movie' if tags are empty
-            if (!tags) {
-                tags = 'Movie';
-            }
-
-            const resultDetails = document.createElement('p');
-            if (mediaType === 'Movie') {
-                resultDetails.innerHTML = `${year} • Movie`;
-            } else {
-                resultDetails.innerHTML = `${year} • ${tags}`;
-            }
-
-            if (!resultInfo.contains(resultDetails)) {
-                resultInfo.appendChild(resultDetails);
-            }
-
-            if (mediaType === 'Movie' && tags !== 'Movie') {
-                const resultTags = document.createElement('p');
-                resultTags.innerHTML = tags;
-
-                if (!resultInfo.contains(resultTags)) {
-                    resultInfo.appendChild(resultTags);
-                }
-            }
-
-            resultItem.appendChild(resultInfo);
-
-            resultsBox.appendChild(resultItem);
-        }
-    }
-}
-
-    async function getReleaseTags(movieId) {
         const apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM';
-        let tags = [];
 
-        try {
-            let response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/release_dates`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + apiKey,
-                    'Accept': 'application/json'
-                }
-            });
-            let data = await response.json();
-
-            let releaseDates = data.results || [];
-
-            let hasCam = false;
-            let hasWeb = false;
-            let hasDvd = false;
-
-            releaseDates.forEach(release => {
-                release.release_dates.forEach(date => {
-                    switch (date.type) {
-                        case 3: // Theatrical
-                            hasCam = true;
-                            break;
-                        case 4: // Digital
-                            hasWeb = true;
-                            break;
-                        case 5: // Physical
-                            hasDvd = true;
-                            break;
-                    }
-                });
-            });
-
-            if (hasCam && !(hasWeb && hasDvd)) {
-                tags.push('<span style="background-color: #cc4444; color: #ffffff; padding: 5px 10px; border-radius: 15px;">CAM</span>');
-            }
-            if (hasWeb) {
-                tags.push('<span style="background-color: #44cc44; color: #ffffff; padding: 5px 10px; border-radius: 15px;">WEB</span>');
-            }
-            if (hasDvd) {
-                tags.push('<span style="background-color: #4488cc; color: #ffffff; padding: 5px 10px; border-radius: 15px;">DVD</span>');
-            }
-        } catch (error) {
-            console.error('Error fetching release dates:', error);
+        function debounce(func, delay) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, delay);
         }
 
-        return tags.join(' ');
-    }
+        function clearPage() {
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('listContainer').style.display = 'none';
+            document.getElementById('playerContainer').style.display = 'none';
+            document.getElementById('episodeInfo').style.display = 'none';
+            document.getElementById('movieInfo').style.display = 'none';
+            document.getElementById('nextEpisodeButton').style.display = 'none';
+			document.getElementById('resultsContainer').style.display = 'none'; 
+        }  
 
-    function clearResults() {
-        const resultsBox = document.getElementById('results-box');
-        resultsBox.innerHTML = '';
-    }
-
-    async function showSeasonSelectionPrompt(tmdbId, showName) {
-        const previousPromptId = currentPrompt;
-        currentPrompt = 'season-selection-box';
-        document.getElementById(previousPromptId).remove();
-
-        const promptBox = document.createElement('div');
-        promptBox.classList.add('prompt-box');
-        promptBox.id = 'season-selection-box';
-
-        isMainPage = false; // Update flag to indicate it's not the main page
-
-        const headingText = document.createElement('h2');
-        headingText.textContent = 'Select Season';
-        headingText.style.fontSize = '30px';
-        headingText.style.marginBottom = '20px';
-        headingText.style.whiteSpace = 'pre-line';
-        promptBox.appendChild(headingText);
-
-        const seasonList = document.createElement('div');
-        seasonList.classList.add('season-list');
-        promptBox.appendChild(seasonList);
-
-        let seasonData;
-        try {
-            let response = await fetch('https://api.themoviedb.org/3/tv/' + tmdbId + '?language=en-US', {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM',
-                    'Accept': 'application/json'
-                }
-            });
-            let data = await response.json();
-            seasonData = data.seasons.filter(season => season.season_number !== 0);
-           const currentDate = new Date();
-
-        seasonData.forEach(season => {
-            const seasonAirDate = new Date(season.air_date);
-
-            // Skip if the season is not yet released
-            if (seasonAirDate > currentDate) {
+        async function searchTMDB() {
+            clearPage();
+            const query = document.getElementById('searchBar').value;
+            if (!query) {
+                clearResults();
                 return;
             }
 
-            const seasonItem = document.createElement('div');
-            seasonItem.classList.add('season-item');
-            seasonItem.onclick = function() {
-                seasonNumber = season.season_number;
-                seasonId = season.id; // Store season ID
-                showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName);
-            };
-		
-                if (season.poster_path) {
-                    const seasonImage = document.createElement('img');
-                    seasonImage.src = 'https://image.tmdb.org/t/p/original' + season.poster_path;
-                    seasonItem.appendChild(seasonImage);
-                }
-
-                const seasonInfo = document.createElement('div');
-                seasonInfo.classList.add('item-info');
-
-                const seasonTitle = document.createElement('h3');
-                seasonTitle.textContent = 'Season ' + season.season_number;
-                seasonInfo.appendChild(seasonTitle);
-
-		if (season.air_date) {
-                const seasonReleaseDate = document.createElement('p');
-                seasonReleaseDate.textContent = `${new Date(season.air_date).toISOString().split('T')[0]}`;
-                seasonReleaseDate.style.fontSize = '14px';
-                seasonReleaseDate.style.color = '#bbb';
-                seasonInfo.appendChild(seasonReleaseDate);
-            }
-
-                if (season.overview) {
-                    const seasonOverview = document.createElement('p');
-                    seasonOverview.textContent = season.overview;
-                    seasonInfo.appendChild(seasonOverview);
-                }
-
-                seasonItem.appendChild(seasonInfo);
-                seasonList.appendChild(seasonItem);
-            });
-        } catch (error) {
-            console.error('Error fetching seasons from TMDB: ' + error);
-        }
-
-        const footer = createFooter(false, () => selectRandomSeason(seasonData), false);
-        promptBox.appendChild(footer);
-
-        document.body.appendChild(promptBox);
-    }
-
-    async function showEpisodeSelectionPrompt(tmdbId, seasonNumber, showName) {
-        const previousPromptId = currentPrompt;
-        currentPrompt = 'episode-selection-box';
-        document.getElementById(previousPromptId).remove();
-
-        const promptBox = document.createElement('div');
-        promptBox.classList.add('prompt-box');
-        promptBox.id = 'episode-selection-box';
-
-        isMainPage = false; // Update flag to indicate it's not the main page
-
-        const headingText = document.createElement('h2');
-        headingText.textContent = 'Select Episode | S' + seasonNumber;
-        headingText.style.fontSize = '30px';
-        headingText.style.marginBottom = '20px';
-        headingText.style.whiteSpace = 'pre-line';
-        promptBox.appendChild(headingText);
-
-        const episodeList = document.createElement('div');
-        episodeList.classList.add('episode-list');
-        promptBox.appendChild(episodeList);
-
-        let seasonData;
-        try {
-            let response = await fetch('https://api.themoviedb.org/3/tv/' + tmdbId + '/season/' + seasonNumber + '?language=en-US', {
+            const response = await fetch(`https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM',
+                    'Authorization': `Bearer ${apiKey}`,
                     'Accept': 'application/json'
                 }
             });
-            let data = await response.json();
-            seasonData = data;
-            const currentDate = new Date();
 
-        data.episodes.forEach(episode => {
-            const episodeAirDate = new Date(episode.air_date);
-
-            // Skip if the episode is not yet released
-            if (episodeAirDate > currentDate) {
-                return;
-            }
-
-            const episodeItem = document.createElement('div');
-            episodeItem.classList.add('episode-item');
-            episodeItem.onclick = function() {
-                episodeNumber = episode.episode_number;
-                episodeId = episode.id; // Store episode ID
-                showEmbeddedVidSrc();
-            };
-
-                const episodeImage = document.createElement('img');
-                episodeImage.src = 'https://image.tmdb.org/t/p/original' + episode.still_path;
-                episodeItem.appendChild(episodeImage);
-
-                const episodeInfo = document.createElement('div');
-                episodeInfo.classList.add('item-info');
-
-                const episodeTitle = document.createElement('h3');
-                episodeTitle.textContent = 'Episode ' + episode.episode_number + ': ' + episode.name;
-                episodeInfo.appendChild(episodeTitle);
-
-		if (episode.air_date) {
-                const episodeReleaseDate = document.createElement('p');
-                episodeReleaseDate.textContent = `${new Date(episode.air_date).toISOString().split('T')[0]}`;
-                episodeReleaseDate.style.fontSize = '14px';
-                episodeReleaseDate.style.color = '#bbb';
-                episodeInfo.appendChild(episodeReleaseDate);
-            }
-
-                if (episode.overview) {
-                    const episodeOverview = document.createElement('p');
-                    episodeOverview.textContent = episode.overview;
-                    episodeInfo.appendChild(episodeOverview);
-                }
-
-                episodeItem.appendChild(episodeInfo);
-                episodeList.appendChild(episodeItem);
-            });
-        } catch (error) {
-            console.error('Error fetching episodes from TMDB: ' + error);
+            const data = await response.json();
+            displayResults(data.results);
         }
 
-        const footer = createFooter(false, () => selectRandomEpisode(seasonData.episodes), false);
-        promptBox.appendChild(footer);
-
-        document.body.appendChild(promptBox);
-    }
-
-    function createFooter(isMainPage, randomFunction, isFinalPage = false) {
-        const footer = document.createElement('div');
-        footer.classList.add('footer');
-
-        if (!isMainPage) {
-            const backButton = document.createElement('div');
-            backButton.classList.add('back-button');
-            backButton.innerHTML = '✨';
-            backButton.onclick = () => createInitialPrompt();
-            footer.appendChild(backButton);
-        }
-
-        const disclaimer = document.createElement('div');
-        disclaimer.classList.add('footer-text');
-        disclaimer.innerHTML = 'Made with ❤️ by Kerrawesome and ChatGPT';
-        footer.appendChild(disclaimer);
-
-        if (randomFunction) {
-            const randomButton = document.createElement('div');
-            randomButton.classList.add('random-button');
-            randomButton.innerHTML = '🎲';
-            randomButton.onclick = randomFunction;
-            footer.appendChild(randomButton);
-        }
-
-        if (isFinalPage) {
-            const sudoFlixButton = document.createElement('div');
-            sudoFlixButton.classList.add('sudo-flix-button');
-            sudoFlixButton.innerHTML = '<img src="https://raw.githubusercontent.com/sussy-code/smov/a301ebde5d97c5a8b5dacd119e84a3ec9942f94e/public/android-chrome-512x512.png" alt="Sudo-Flix">';
-            sudoFlixButton.onclick = () => {
-                let url;
-                if (isTvShow) {
-                    url = `https://pseudo-flix.pro/media/tmdb-tv-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}/${seasonId}/${episodeId}`;
-                } else {
-                    url = `https://pseudo-flix.pro/media/tmdb-movie-${tmdbId}-${showName.split(' ').join('-').toLowerCase()}`;
-                }
-                window.open(url, '_blank');
-            };
-            footer.appendChild(sudoFlixButton);
-
-            const infoButton = document.createElement('div');
-            infoButton.classList.add('info-button');
-            infoButton.innerHTML = '🔗';
-            infoButton.onclick = () => window.open('https://github.com/Kerrawesome/bingchilling.media', '_blank');
-            footer.appendChild(infoButton);
-        }
-
-        return footer;
-    }
-
-    function selectRandomSeason(seasons) {
-        const randomSeason = seasons[Math.floor(Math.random() * seasons.length)];
-        seasonNumber = randomSeason.season_number;
-        seasonId = randomSeason.id; // Store random season ID
-        showEpisodeSelectionPrompt(tmdbId, seasonNumber);
-    }
-
-    function selectRandomEpisode(episodes) {
-        const randomEpisode = episodes[Math.floor(Math.random() * episodes.length)];
-        episodeNumber = randomEpisode.episode_number;
-        episodeId = randomEpisode.id; // Store random episode ID
-        showEmbeddedVidSrc();
-    }
-
-    async function showEmbeddedVidSrc() {
-		const previousPromptId = currentPrompt;
-		currentPrompt = 'embed-prompt-box';
-		document.getElementById(previousPromptId).remove();
-
-		const promptBox = document.createElement('div');
-		promptBox.classList.add('prompt-box');
-		promptBox.id = 'embed-prompt-box';
-
-		const dropdownContainer = document.createElement('div');
-		dropdownContainer.className = 'dropdown-container';
-		promptBox.appendChild(dropdownContainer);
-
-		// Add the control buttons next to the iframe
-		const popcornButton = document.createElement('button');
-		popcornButton.className = 'control-button';
-		popcornButton.innerHTML = '🍿';
-		popcornButton.onclick = function() {
-			window.open(document.getElementById('video-iframe').src, '_blank');
-		};
-		dropdownContainer.appendChild(popcornButton);
-
-		const nextEpisodeButton = document.createElement('button'); 
-		nextEpisodeButton.className = 'control-button';
-		nextEpisodeButton.id = 'next-episode-button';
-		nextEpisodeButton.style.display = isTvShow ? 'block' : 'none'; // Show only for TV shows
-		nextEpisodeButton.innerHTML = ''; 
-		nextEpisodeButton.onclick = async function() {
-			const nextEpisode = episodeNumber + 1;
-			let nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
-			if (nextEpisodeData) {
-				episodeNumber = nextEpisode;
-				episodeId = nextEpisodeData.id; // Store next episode ID
-				showEmbeddedVidSrc(); // Load the player with the next episode
+		function displayResults(results) {
+			const resultsContainer = document.getElementById('resultsContainer');
+			
+			// Check if there are no results, if so, clear and hide the container
+			if (results.length === 0) {
+				clearResults();
+				return;
 			}
-		};
-		dropdownContainer.appendChild(nextEpisodeButton);
 
-		const iframeContainer = document.createElement('div');
-		iframeContainer.className = 'iframe-container';
+			// Clear the container and make it visible for displaying results
+			resultsContainer.innerHTML = '';
+			resultsContainer.style.display = 'grid'; // Ensure the container is visible
 
-		const iframe = document.createElement('iframe');
-		iframe.className = 'iframe';
-		iframe.id = 'video-iframe';
-		iframe.allowFullscreen = true;
-	     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
-		iframeContainer.appendChild(iframe);
-		promptBox.appendChild(iframeContainer);
+			const currentDate = new Date(); // Get the current date
 
-		const footer = createFooter(false, null, true); // Indicate it's the final page
-		promptBox.appendChild(footer);
+			results.forEach(async (result) => {
+				const title = result.title || result.name; // Movie title or TV show name
+				const year = (result.release_date || result.first_air_date || '').split('-')[0]; // Extract the year
+				const releaseDate = result.release_date || result.first_air_date; // Get release date
+				const mediaType = result.media_type === 'movie' ? 'Movie' : 'TV Show'; // Check if it's a movie or TV show
+				const posterPath = result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : '';
 
-		document.body.appendChild(promptBox);
+				// Skip unreleased content
+				if (releaseDate && new Date(releaseDate) > currentDate) {
+					return; // Skip if the release date is in the future
+				}
 
-		await updateIframeSrc();
-		await updateNextEpisodeButton();
-	}
- 
-	async function updateIframeSrc() {
-		let videoUrl;
-		if (isTvShow) {
-			// Construct URL for TV shows
-			videoUrl = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
-		} else {
-			// Construct URL for movies
-			videoUrl = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
+				if (!posterPath) return;
+
+				const item = document.createElement('div');
+				item.classList.add('result-item');
+
+				let tagsHTML = '';
+				if (result.media_type === 'movie') {
+					const tags = await getReleaseTags(result.id);
+					tagsHTML = `<div class="tags">${tags}</div>`;
+				}
+
+				// Update h3 to include the title, and use p to show media type and year
+				item.innerHTML = `
+					<img src="${posterPath}" alt="${title}" />
+					<h3>${title}</h3>
+					<p>${mediaType} - ${year}</p>
+					${tagsHTML}
+				`;
+
+				item.onclick = () => selectListing(result);
+				resultsContainer.appendChild(item);
+			});
 		}
-		document.getElementById('video-iframe').src = videoUrl;
-	}
 
-    async function updateNextEpisodeButton() {
-    const nextEpisode = episodeNumber + 1;
-    const nextEpisodeData = await checkNextEpisodeExists(tmdbId, seasonNumber, nextEpisode);
-    const nextEpisodeButton = document.getElementById('next-episode-button');
+		function clearResults() {
+			const resultsContainer = document.getElementById('resultsContainer');
+			// Clear content and hide results container
+			resultsContainer.innerHTML = '';
+			resultsContainer.style.display = 'none'; // Hide the container when no results
+		}
 
-    if (nextEpisodeData) {
-        nextEpisodeButton.innerHTML = `Next: <span class="codeblock">E${nextEpisode}</span>`;
-        nextEpisodeButton.classList.remove('disabled');
-    } else {
-        nextEpisodeButton.innerHTML = 'Next Episode';
-        nextEpisodeButton.classList.add('disabled');
-    }
-}
-	    
-	function checkFullscreen() {
-	    const iframeContainer = document.querySelector('.iframe-container');
-	    const iframe = document.getElementById('video-iframe');
-	
-	    if (document.fullscreenElement === iframeContainer || document.fullscreenElement === iframe) {
-	        iframeContainer.style.borderRadius = '0';
-	        iframe.style.borderRadius = '0';
-	    } else {
-	        iframeContainer.style.borderRadius = '10px';
-	        iframe.style.borderRadius = '10px';
-	    }
-	}
-	
-	document.addEventListener('fullscreenchange', checkFullscreen);
-	document.addEventListener('webkitfullscreenchange', checkFullscreen); // For Safari
-	document.addEventListener('mozfullscreenchange', checkFullscreen); // For Firefox
-	document.addEventListener('MSFullscreenChange', checkFullscreen); // For IE/Edge
-	    
-    async function checkNextEpisodeExists(tmdbId, seasonNumber, episodeNumber) {
-        try {
-            let response = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}/episode/${episodeNumber}?language=en-US`, {
+        async function getReleaseTags(movieId) {
+            const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/release_dates`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OTNiNWI3ODhlM2U0NDM4Y2Y2ZmY0ODI3NTJjN2Q2MSIsIm5iZiI6MTcxOTMxMjU2OC41NTY3MDEsInN1YiI6IjY2N2E5ZTczOTdkMDQ3YWNlNTNiNWU2MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TRZDf_GmWas5rFhq-6wzT7RUJOCxvCUFf6hT-Jd9iIM',
+                    'Authorization': `Bearer ${apiKey}`,
                     'Accept': 'application/json'
                 }
             });
-            if (response.status === 404) {
-                return false;
+            const data = await response.json();
+
+            const usReleases = data.results.find(r => r.iso_3166_1 === 'US');
+            if (!usReleases) return '';
+
+            const releaseTags = [];
+            usReleases.release_dates.forEach(release => {
+                const releaseType = release.type;
+                if (releaseType === 3) releaseTags.push('<span class="tag cam">CAM</span>');
+                if (releaseType === 4) releaseTags.push('<span class="tag web">WEB</span>');
+                if (releaseType === 5) releaseTags.push('<span class="tag dvd">DVD</span>');
+            });
+
+            if (releaseTags.includes('<span class="tag cam">CAM</span>') &&
+                releaseTags.includes('<span class="tag web">WEB</span>') &&
+                releaseTags.includes('<span class="tag dvd">DVD</span>')) {
+                return '<span class="tag web">WEB</span> <span class="tag dvd">DVD</span>';
             }
-            let data = await response.json();
-            return data; // Return episode data if exists
-        } catch (error) {
-            console.error('Error checking next episode from TMDB:', error);
-            return false;
+
+            return releaseTags.join(' ');
         }
-    }
-    window.onload = function() {
-        createInitialPrompt();
-    };
+
+        function selectListing(result) {
+            tmdbId = result.id;
+            isTvShow = result.media_type === 'tv';
+            hideSearch();
+
+            if (isTvShow) {
+                loadSeasons();
+            } else {
+                loadMovie(result);
+            } 
+        }
+
+		function loadSeasons() {
+			fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?language=en-US`, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${apiKey}`,
+					'Accept': 'application/json'
+				}
+			})
+			.then(response => response.json())
+			.then(data => {
+				const currentDate = new Date(); // Get the current date
+				const seasons = data.seasons.filter(season => {
+					const airDate = new Date(season.air_date); // Check air date of each season
+					return airDate <= currentDate && season.season_number !== 0; // Only include released seasons
+				});
+				document.getElementById('listContainer').style.display = 'grid';
+
+				document.getElementById('listContainer').innerHTML = ''; // Clear previous seasons
+
+				seasons.forEach(season => {
+					const item = document.createElement('div');
+					item.classList.add('list-item');
+
+					item.innerHTML = `
+						<img src="https://image.tmdb.org/t/p/w500${season.poster_path}" alt="${season.name}" />
+						<div class="text-container">
+							<h3>Season ${season.season_number}</h3>
+						</div>
+					`;
+					item.onclick = () => selectSeason(season.season_number);
+					document.getElementById('listContainer').appendChild(item);
+				});
+			});
+		}
+
+        function selectSeason(number) {
+            seasonNumber = number;
+            loadEpisodes();
+        }
+
+		function loadEpisodes() {
+			fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}?language=en-US`, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${apiKey}`,
+					'Accept': 'application/json'
+				}
+			})
+			.then(response => response.json())
+			.then(data => {
+				const currentDate = new Date(); // Get the current date
+				const episodes = data.episodes.filter(episode => {
+					const airDate = new Date(episode.air_date); // Check air date of each episode
+					return airDate <= currentDate; // Only include released episodes
+				});
+
+				document.getElementById('listContainer').innerHTML = ''; // Clear previous episodes
+
+				episodes.forEach(episode => {
+					const item = document.createElement('div');
+					item.classList.add('episode-item');
+
+					item.innerHTML = `
+						<img src="https://image.tmdb.org/t/p/w500${episode.still_path}" alt="${episode.name}" />
+						<div class="text-container">
+							<h3>Episode ${episode.episode_number}: ${episode.name}</h3>
+						</div>
+					`;
+					item.onclick = () => selectEpisode(episode.episode_number, episode.name, episode.overview);
+					document.getElementById('listContainer').appendChild(item);
+				});
+			});
+		}
+
+        function selectEpisode(number, name, summary) {
+            episodeNumber = number;
+
+            document.getElementById('episodeTitle').textContent = `Episode ${number}: ${name}`;
+            document.getElementById('episodeSummary').textContent = summary;
+            document.getElementById('episodeInfo').style.display = 'block';
+
+            document.getElementById('movieInfo').style.display = 'none';
+            document.getElementById('playerContainer').style.display = 'block';
+
+            loadEpisode();
+        }
+
+        function loadMovie(movie) {
+			const year = (movie.release_date || '').split('-')[0]; // Extract the year from the release date
+			document.getElementById('movieTitle').textContent = `${movie.title} (${year})`; // Add the year to the title
+			document.getElementById('movieSummary').textContent = movie.overview;
+			document.getElementById('movieInfo').style.display = 'block';
+			document.getElementById('episodeInfo').style.display = 'none';
+			document.getElementById('playerContainer').style.display = 'block';
+ 
+			const videoUrl = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`; 
+			showPlayer(videoUrl);
+		}
+		
+        function loadEpisode() {
+            const videoUrl = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
+            showPlayer(videoUrl);
+        }
+
+        function showPlayer(videoUrl) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.src = videoUrl;
+            document.getElementById('playerContainer').style.display = 'block';
+        }
+
+        function hideSearch() {
+            document.getElementById('resultsContainer').innerHTML = '';
+        }
+
+        function clearResults() {
+            document.getElementById('resultsContainer').innerHTML = '';
+        }
     </script>
-</head>
-	
-<body>
 </body>
-	
+
 </html>
