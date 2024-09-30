@@ -517,7 +517,7 @@
 				});
 			});
 		}
-
+ 
         function selectEpisode(number, name, summary) {
             episodeNumber = number;
 
@@ -561,6 +561,24 @@
         function clearResults() {
             document.getElementById('resultsContainer').innerHTML = '';
         }
+
+	document.getElementById('videoPlayer').addEventListener('fullscreenchange', function() {
+	    const iframe = document.getElementById('videoPlayer');
+	    if (document.fullscreenElement) {
+	        iframe.style.borderRadius = '0'; // Remove rounded corners in fullscreen
+	    } else {
+	        iframe.style.borderRadius = '10px'; // Reapply rounded corners when not in fullscreen
+	    }
+	});
+	
+	document.getElementById('videoPlayer').addEventListener('webkitfullscreenchange', function() {
+	    const iframe = document.getElementById('videoPlayer');
+	    if (document.webkitFullscreenElement) {
+	        iframe.style.borderRadius = '0'; // Remove rounded corners in fullscreen
+	    } else {
+	        iframe.style.borderRadius = '10px'; // Reapply rounded corners when not in fullscreen
+	    }
+	});
     </script>
 </body>
 
