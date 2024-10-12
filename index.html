@@ -127,28 +127,6 @@
             font-size: 14px;
         }
 
-        .tag {
-            display: inline-block;
-            padding: 5px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        .tag.cam {
-            background-color: red;
-            color: white;
-        }
-
-        .tag.web {
-            background-color: green;
-            color: white;
-        }
-
-        .tag.dvd {
-            background-color: blue;
-            color: white;
-        }
-
         .player-container {
             padding-left: 20px;
             padding-right: 20px;
@@ -256,6 +234,12 @@
         button:hover {
             background-color: #cc6f00;
         }
+		
+		.release-date {
+			font-size: 16px; /* Smaller font size */
+			color: grey;
+			text-align: center; /* Center the text */
+		}
     </style>
 </head>
 
@@ -377,18 +361,11 @@
 				const item = document.createElement('div');
 				item.classList.add('result-item');
 
-				let tagsHTML = '';
-				if (result.media_type === 'movie') {
-					const tags = await getReleaseTags(result.id);
-					tagsHTML = `<div class="tags">${tags}</div>`;
-				}
-
 				// Update h3 to include the title, and use p to show media type and year
 				item.innerHTML = `
 					<img src="${posterPath}" alt="${title}" />
 					<h3>${title}</h3>
-					<p>${mediaType} - ${year}</p>
-					${tagsHTML}
+					<p class="release-date">${mediaType} - ${year}</p>
 				`;
 
 				item.onclick = () => selectListing(result);
@@ -403,35 +380,6 @@
 			resultsContainer.style.display = 'none'; // Hide the container when no results
 		}
 
-        async function getReleaseTags(movieId) {
-            const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/release_dates`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Accept': 'application/json'
-                }
-            });
-            const data = await response.json();
-
-            const usReleases = data.results.find(r => r.iso_3166_1 === 'US');
-            if (!usReleases) return '';
-
-            const releaseTags = [];
-            usReleases.release_dates.forEach(release => {
-                const releaseType = release.type;
-                if (releaseType === 3) releaseTags.push('<span class="tag cam">CAM</span>');
-                if (releaseType === 4) releaseTags.push('<span class="tag web">WEB</span>');
-                if (releaseType === 5) releaseTags.push('<span class="tag dvd">DVD</span>');
-            });
-
-            if (releaseTags.includes('<span class="tag cam">CAM</span>') &&
-                releaseTags.includes('<span class="tag web">WEB</span>') &&
-                releaseTags.includes('<span class="tag dvd">DVD</span>')) {
-                return '<span class="tag web">WEB</span> <span class="tag dvd">DVD</span>';
-            }
-
-            return releaseTags.join(' ');
-        }
 
         function selectListing(result) {
             tmdbId = result.id;
@@ -469,9 +417,13 @@
 					const item = document.createElement('div');
 					item.classList.add('list-item');
 
+					// Format the air date into ISO format
+					const airDateISO = new Date(season.air_date).toISOString().split('T')[0];
+
 					item.innerHTML = `
 						<img src="https://image.tmdb.org/t/p/w500${season.poster_path}" alt="${season.name}" />
 						<div class="text-container">
+							<p class="release-date">${airDateISO}</p>
 							<h3>Season ${season.season_number}</h3>
 						</div>
 					`;
@@ -508,9 +460,13 @@
 					const item = document.createElement('div');
 					item.classList.add('episode-item');
 
+					// Format the air date into ISO format
+					const airDateISO = new Date(episode.air_date).toISOString().split('T')[0];
+
 					item.innerHTML = `
 						<img src="https://image.tmdb.org/t/p/w500${episode.still_path}" alt="${episode.name}" />
 						<div class="text-container">
+							<p class="release-date">${airDateISO}</p>
 							<h3>Episode ${episode.episode_number}: ${episode.name}</h3>
 						</div>
 					`;
