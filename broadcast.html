@@ -33,7 +33,6 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			cursor: pointer; /* Make title container clickable */
 		}
 
 		.title-text {
@@ -165,7 +164,7 @@
 </head>
  
 <body>
-    <div class="title-container" onclick="resetToHomescreen()">
+    <div class="title-container">
         <img src="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" alt="Ice Cream Icon" class="title-image">
         <div class="title-text">
             <h1>Bing Chilling</h1>
@@ -407,12 +406,6 @@
 
             displayListings(filteredTV, filteredRadio);
         }
-
-        // Reset to homescreen (full listings) on logo click
-        function resetToHomescreen() {
-            window.location.reload();
-        }
-
     </script>
 </body>
 </html>
