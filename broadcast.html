@@ -187,6 +187,7 @@
             border-bottom-right-radius: 0;
             border-bottom: 1px solid rgba(0,0,0,0.12);
         }
+        
 
         /* === Content Area (Grid) (Stream Page Specific - Unchanged) === */
         .collapsible-content {
@@ -217,6 +218,12 @@
              margin-top: 0;
         }
 
+@media (min-width: 1024px) { /* Apply only to larger screens */
+  body {
+    zoom: 1.15; /* Adjust value between 1.1 (110%) and 1.2 (120%) as needed */
+  }
+}
+        
         /* === Material Card Styling for Stream Items (Stream Page Specific - Unchanged) === */
         .result-item {
             background-color: var(--md-surface-color);
@@ -279,13 +286,6 @@
           .result-item img { width: 60px; height: 60px; margin-bottom: calc(var(--spacing-unit) * 0.5); }
           .result-item h3 { font-size: 0.8rem; }
           .subsection-title { font-size: 0.9rem; }
-
-            
-            @media (min-width: 1024px) { /* Apply only to larger screens */
-  body {
-    zoom: 1.15; /* Adjust value between 1.1 (110%) and 1.2 (120%) as needed */
-  }
-}
     </style>
 </head>
 
