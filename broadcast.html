@@ -280,14 +280,12 @@
           .result-item h3 { font-size: 0.8rem; }
           .subsection-title { font-size: 0.9rem; }
 
-          /* REMOVED Header/Title overrides */
-          /* .app-header { padding: calc(var(--spacing-unit)*0.5) var(--spacing-unit); } */
-          /* .title-image { width: 45px; height: 45px;} */
-          /* .title-text h1 {font-size: 1.2rem;} */
-          /* .title-text h2 {font-size: 0.85rem;} */
-          /* .title-text h3 {font-size: 0.75rem;} */
-          /* .title-container { gap: var(--spacing-unit); } */
-        }
+            
+            @media (min-width: 1024px) { /* Apply only to larger screens */
+  body {
+    zoom: 1.15; /* Adjust value between 1.1 (110%) and 1.2 (120%) as needed */
+  }
+}
     </style>
 </head>
 
