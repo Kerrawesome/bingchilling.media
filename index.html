@@ -197,6 +197,12 @@
     margin: calc(var(--spacing-unit) * 2) auto 0 auto;
 }
 
+@media (min-width: 1024px) { /* Apply only to larger screens */
+  body {
+    zoom: 1.15; /* Adjust value between 1.1 (110%) and 1.2 (120%) as needed */
+  }
+}
+        
 /* --- Popular Grids Section (Remains Compact - No Change Needed Here) --- */
 .popular-grid-container { /* Container for the popular grid items */
     display: grid;
