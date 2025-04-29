@@ -173,37 +173,39 @@
             padding: 0 calc(var(--spacing-unit) * 2); /* Align with grid padding */
         }
 
-        .popular-grid-container { /* Container for the popular grid items */
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Keep smaller cards */
-            gap: calc(var(--spacing-unit) * 1.5); /* Keep smaller gap */
-            padding: 0 calc(var(--spacing-unit) * 2); /* Consistent padding */
-            width: 100%;
-        }
-        /* --- End Popular Grids Section --- */
+        /* Search Results Grid (Adjusted Minimum Size) */
+.results-container {
+    display: grid;
+    /* Change min from 180px to 150px */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: calc(var(--spacing-unit) * 2); /* Original Gap */
+    padding: 0 calc(var(--spacing-unit) * 2);
+    width: 100%;
+    max-width: 1200px;
+    margin: calc(var(--spacing-unit) * 2) auto;
+}
 
+ /* List Container (Seasons/Episodes) (Adjusted Minimum Size) */
+.list-container {
+    display: grid;
+    /* Change min from 180px to 150px */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: calc(var(--spacing-unit) * 2); /* Original Gap */
+    padding: 0 calc(var(--spacing-unit) * 2);
+    width: 100%;
+    max-width: 1200px;
+    margin: calc(var(--spacing-unit) * 2) auto 0 auto;
+}
 
-        /* Search Results Grid (Restored Original Sizes) */
-        .results-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Original Size */
-            gap: calc(var(--spacing-unit) * 2); /* Original Gap */
-            padding: 0 calc(var(--spacing-unit) * 2);
-            width: 100%;
-            max-width: 1200px;
-            margin: calc(var(--spacing-unit) * 2) auto;
-        }
-
-         /* List Container (Seasons/Episodes) (Restored Original Sizes) */
-        .list-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Original Size */
-            gap: calc(var(--spacing-unit) * 2); /* Original Gap */
-            padding: 0 calc(var(--spacing-unit) * 2);
-            width: 100%;
-            max-width: 1200px;
-            margin: calc(var(--spacing-unit) * 2) auto 0 auto;
-        }
+/* --- Popular Grids Section (Remains Compact - No Change Needed Here) --- */
+.popular-grid-container { /* Container for the popular grid items */
+    display: grid;
+    /* Keep smaller cards - 150px min already ensures 2 columns usually */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: calc(var(--spacing-unit) * 1.5); /* Keep smaller gap */
+    padding: 0 calc(var(--spacing-unit) * 2); /* Consistent padding */
+    width: 100%;
+}
 
 
         /* Default Card Styling (Restored Original Sizes) */
