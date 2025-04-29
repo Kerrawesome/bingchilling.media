@@ -3,407 +3,674 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     <title>Bing Chilling Stream</title>
     <link rel="icon" href="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" type="image/png">
+    <!-- Link Google Font Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-		* {
-			box-sizing: border-box;
-			scrollbar-width: none; /* For Firefox */
-			-ms-overflow-style: none; /* For IE and Edge */
-		}
+        /* === Material Design Variables === */
+        :root {
+            --md-primary-color: #e68a00; /* Orange accent */
+            --md-primary-dark-color: #cc6f00;
+            --md-background-color: #f5f5f5; /* Light grey background */
+            --md-surface-color: #ffffff; /* White surface for cards, header */
+            --md-on-primary-color: #ffffff; /* Text on primary color */
+            --md-on-surface-primary: rgba(0, 0, 0, 0.87); /* Primary text on surface */
+            --md-on-surface-secondary: rgba(0, 0, 0, 0.6); /* Secondary text on surface */
+            --md-border-radius: 4px;
+            --md-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); /* Subtle shadow */
+            --md-elevation-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); /* Slightly more pronounced */
+            --md-elevation-4: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22); /* Hover/active shadow */
+            --spacing-unit: 8px;
+        }
 
-		*::-webkit-scrollbar {
-			display: none; /* For WebKit browsers */
-		}
+        /* === Basic Reset & Body === */
+        * { box-sizing: border-box; scrollbar-width: none; -ms-overflow-style: none; }
+        *::-webkit-scrollbar { display: none; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0; padding: 0; width: 100%; max-width: 100vw;
+            font-family: 'Roboto', sans-serif; background-color: var(--md-background-color);
+            color: var(--md-on-surface-primary); padding-bottom: calc(var(--spacing-unit) * 3);
+            text-align: center; display: flex; flex-direction: column; min-height: 100vh;
+        }
 
-		body {
-			margin: 0;
-			padding: 0;
-			width: 100%;
-			max-width: 100vw;
-			font-family: 'Roboto', sans-serif;
-			text-align: center;
-		}
+        /* === Header === */
+        .app-header {
+            background-color: var(--md-surface-color); padding: var(--spacing-unit) calc(var(--spacing-unit) * 2);
+            box-shadow: var(--md-elevation-2); position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+        }
+        .title-container { display: flex; align-items: center; gap: calc(var(--spacing-unit) * 2); text-align: left; }
+        .title-image { width: 60px; height: 60px; object-fit: contain; }
+        .title-text h1, .title-text h2, .title-text h3 { margin: 0; line-height: 1.2; }
+        .title-text h1 { font-size: 1.5rem; font-weight: 500; }
+        .title-text h2 { font-size: 1rem; font-weight: 400; color: var(--md-on-surface-secondary); }
+        .title-text h2 a { color: var(--md-primary-color); text-decoration: none; }
+        .title-text h2 a:hover { text-decoration: underline; }
+        .title-text h3 { font-size: 0.875rem; font-weight: 400; color: var(--md-on-surface-secondary); }
 
-		/* Title Section */
-		.title-container {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
+        /* === Main Content Area === */
+        main {
+            padding: calc(var(--spacing-unit) * 2);
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             flex-grow: 1;
+             width: 100%;
+             overflow: hidden; /* Prevent content overflow issues */
+        }
 
-		.title-text {
-			text-align: left;
-			margin-top: 20px;
-		}
+        /* === Search Section === */
+        .search-container {
+             width: 100%; max-width: 800px; margin-bottom: calc(var(--spacing-unit) * 3);
+             flex-shrink: 0;
+        }
+        input[type="text"] {
+            display: block; width: 90%; max-width: 400px; margin: 0 auto;
+            padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
+            font-size: 1rem; color: var(--md-on-surface-primary);
+            background-color: var(--md-surface-color); border: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: var(--md-border-radius) var(--md-border-radius) 0 0;
+            box-shadow: var(--md-elevation-1);
+            transition: border-bottom 0.3s ease, box-shadow 0.3s ease;
+        }
+        input[type="text"]:focus { outline: none; border-bottom: 2px solid var(--md-primary-color); box-shadow: var(--md-elevation-2); }
+        input[type="text"]::placeholder { color: var(--md-on-surface-secondary); opacity: 1; text-align: left; }
 
-		.title-text h1, 
-		.title-text h2,
-		.title-text h3 {
-			margin: 0;
-		}
+        /* === Container for Collapsible Sections === */
+        #streamsContainer {
+            width: 100%;
+            max-width: 1200px; /* Max width for the stream lists */
+            flex-grow: 1;
+            overflow-y: auto; /* Allow scrolling if needed */
+            padding: var(--spacing-unit);
+        }
 
-		.title-image {
-			width: 80px;
-			height: auto;
-			border-radius: 5px;
-			margin-top: 20px;
-		}
+        /* === Styling for each Collapsible Section === */
+        .collapsible-section {
+            /* Removed background-color and box-shadow from here */
+            border-radius: var(--md-border-radius);
+            margin-bottom: calc(var(--spacing-unit) * 2);
+            overflow: hidden; /* Keep this */
+        }
 
-		input[type="text"] {
-			padding: 10px;
-			border-radius: 5px;
-			border: 1px solid black;
-			background-color: #f4f4f4;
-			text-align: center;
-			display: block;
-			margin-left: auto;
-			margin-right: auto;
-		}
+        /* === Header/Toggle Bar === */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
+            cursor: pointer;
+            /* Header keeps its styling */
+            background-color: var(--md-surface-color);
+            border-radius: var(--md-border-radius); /* Rounded corners for header */
+            box-shadow: var(--md-elevation-1); /* Shadow for header */
+            border-bottom: 1px solid rgba(0,0,0,0.08); /* Separation line */
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 0; /* Remove margin if content doesn't have background */
+        }
+        .collapsible-header:hover {
+            background-color: #f8f8f8; /* Slightly darker on hover */
+            box-shadow: var(--md-elevation-2);
+        }
+        .collapsible-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--md-on-surface-primary);
+        }
+        .toggle-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+            transform-origin: center;
+        }
+        .collapsible-header.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+        /* Adjust header border-radius when content is shown */
+        .collapsible-header.expanded {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom: 1px solid rgba(0,0,0,0.12); /* Slightly stronger border when expanded */
+        }
 
-		.main-container {
-			display: flex;
-			width: 100%;
-			margin-top: 20px;
-			height: calc(100vh); /* Adjust as needed */
-			overflow: hidden; /* Hide overflow for main container */
-		}
 
-		.column {
-			flex: 1;
-			overflow-y: auto; /* Scrollable column */
-			padding: 10px;
-		}
+        /* === Content Area (Grid) === */
+        .collapsible-content {
+            display: grid;
+            /* Default Grid: Auto-fill for larger screens */
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: calc(var(--spacing-unit) * 1.5);
+            padding: calc(var(--spacing-unit) * 2);
+             /* Start hidden */
+            display: none;
+            /* REMOVED: background-color: var(--md-surface-color); */
+             /* Optional: Add a subtle top padding if header border isn't enough */
+             /* padding-top: calc(var(--spacing-unit) * 1); */
+        }
+        /* Show content when expanded */
+         .collapsible-content.expanded {
+             display: grid;
+         }
 
-		.results-container {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-			gap: 10px;
-			width: 100%;
-			box-sizing: border-box;
-		}
+        /* === Subsection Heading === */
+        .subsection-title {
+            grid-column: 1 / -1; /* Span full width */
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--md-on-surface-primary);
+            margin-top: calc(var(--spacing-unit) * 1.5);
+            margin-bottom: calc(var(--spacing-unit) * 0.5);
+            padding-bottom: calc(var(--spacing-unit) * 0.5);
+            border-bottom: 1px solid rgba(0,0,0,0.12);
+        }
+        /* Remove top margin for the very first subsection title */
+        .collapsible-content > .subsection-title:first-child {
+             margin-top: 0;
+        }
 
-		.result-item {
-			padding: 10px;
-			background-color: #f4f4f4;
-			border-radius: 8px;
-			cursor: pointer;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			transition: background-color 0.3s;
-		}
 
-		.result-item:hover {
-			background-color: #e0e0e0;
-		}
+        /* === Material Card Styling for Stream Items === */
+        .result-item {
+            background-color: var(--md-surface-color); /* Use surface color */
+            border-radius: var(--md-border-radius);
+            box-shadow: var(--md-elevation-1); /* Apply base elevation */
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden; /* Clip content/image */
+            transition: box-shadow 0.3s ease, transform 0.2s ease; /* Animate shadow and transform */
+            position: relative;
+            padding: var(--spacing-unit); /* Internal padding */
+        }
+        .result-item:hover {
+            box-shadow: var(--md-elevation-4); /* Increase shadow on hover */
+            transform: translateY(-3px); /* Lift effect */
+        }
+        .result-item:focus-visible {
+            outline: 2px solid var(--md-primary-color);
+            outline-offset: 2px;
+            box-shadow: var(--md-elevation-4); /* Match hover shadow */
+            transform: translateY(-3px); /* Match hover lift */
+        }
+        .result-item img {
+            width: 80px; height: 80px; object-fit: contain;
+            border-radius: var(--md-border-radius); margin-bottom: var(--spacing-unit);
+            background-color: #e0e0e0; /* Slightly darker placeholder bg */
+        }
+        .result-item h3 {
+            font-size: 0.875rem; font-weight: 500; margin: 0;
+            color: var(--md-on-surface-primary); line-height: 1.3;
+            white-space: normal; overflow-wrap: break-word; width: 100%;
+            padding: 0 calc(var(--spacing-unit) * 0.5); margin-bottom: calc(var(--spacing-unit) * 0.5);
+        }
 
-		.result-item img {
-			width: 80px;
-			height: 80px;
-			object-fit: contain;
-			border-radius: 8px;
-			margin-bottom: 5px;
-		}
+        /* === Player Section Styling === */
+        #playerContainer.player-container {
+            padding: calc(var(--spacing-unit) * 2); width: 100%; max-width: 800px;
+            margin: 0 auto; text-align: center; flex-grow: 1;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #playerContainer video { width: 100%; max-width: 800px; height: auto; border-radius: var(--md-border-radius); background-color: #000; box-shadow: var(--md-elevation-2); }
+        #playerContainer .player-logo { width: 100%; max-width: 200px; height: auto; border-radius: var(--md-border-radius); margin-bottom: var(--spacing-unit); }
+        #playerContainer .player-info { font-size: 1.1rem; font-weight: 500; color: var(--md-on-surface-primary); margin-top: var(--spacing-unit); margin-bottom: calc(var(--spacing-unit) * 1.5); }
+        #playerContainer audio { width: 100%; max-width: 600px; border-radius: var(--md-border-radius); margin-top: var(--spacing-unit); box-shadow: var(--md-elevation-1); }
 
-		.result-item h3 {
-			font-size: 14px;
-			margin: 0;
-			text-align: center;
-		}
+        .hidden { display: none !important; }
 
-		.player-container {
-			padding-left: 20px;
-			padding-right: 20px;
-			padding-top: 20px;
-			width: 100%;
-			max-width: 800px;
-			margin-left: auto;
-			margin-right: auto;
-			text-align: center;
-		}
-
-		video {
-			width: 100%;
-			max-width: 800px;
-		}
-
-		audio {
-			width: 100%;
-			max-width: 600px;
-			border-radius: 12px;
-			margin-top: 10px;
-			margin-left: auto;
-			margin-right: auto;
-		}
-
-		.player-info {
-			text-align: center;
-			margin-top: 10px;
-		}
-
-		.player-logo {
-			width: 200px;
-			height: auto;
-			border-radius: 10px;
-		}
-
-		input[type="text"] {
-			width: 60%;
-			max-width: 300px;
-			text-align: left;
-		}
-
-		.hidden {
-			display: none;
-		}
-    </style> 
+        /* === Media Query for Mobile Two-Column Layout === */
+        @media (max-width: 600px) {
+          .collapsible-content {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-unit);
+            padding: var(--spacing-unit) calc(var(--spacing-unit) * 1.5);
+          }
+          .result-item { padding: calc(var(--spacing-unit) * 0.75); }
+          .result-item img { width: 60px; height: 60px; margin-bottom: calc(var(--spacing-unit) * 0.5); }
+          .result-item h3 { font-size: 0.8rem; }
+          .app-header { padding: calc(var(--spacing-unit)*0.5) var(--spacing-unit); }
+          .title-image { width: 45px; height: 45px;}
+          .title-text h1 {font-size: 1.2rem;}
+          .title-text h2 {font-size: 0.85rem;}
+          .title-text h3 {font-size: 0.75rem;}
+          .title-container { gap: var(--spacing-unit); }
+          .subsection-title { font-size: 0.9rem; }
+        }
+    </style>
 </head>
- 
+
 <body>
-    <div class="title-container">
-        <img src="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" alt="Ice Cream Icon" class="title-image">
-        <div class="title-text">
-            <h1>Bing Chilling</h1>
-            <h2>Stream | <a href="index.html">media</a></h2>
-			<h3>By Kerrawesome</h3>
+    <header class="app-header">
+        <div class="title-container">
+            <img src="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" alt="Ice Cream Icon" class="title-image">
+            <div class="title-text">
+                <h1>Bing Chilling</h1>
+                <h2>Stream | <a href="index.html">media</a></h2>
+                <h3>By Kerrawesome</h3>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <input type="text" id="searchBar" placeholder="Search" oninput="debounceFilter()" />
+    <main>
+        <section class="search-container">
+             <label id="search-label" class="hidden">Search Streams</label>
+            <input type="text" id="searchBar" placeholder="Search Streams" aria-labelledby="search-label" oninput="debounceFilter()" />
+        </section>
 
-    <div id="playerContainer" class="player-container hidden"></div>
-    <div id="mainContainer" class="main-container hidden">
-        <div class="column">
-            <div id="tvResultsContainer" class="results-container"></div>
+        <!-- Container for player -->
+        <section id="playerContainer" class="player-container hidden"></section>
+
+        <!-- Container for streams (TV and Radio Sections) -->
+        <div id="streamsContainer" class="hidden">
+
+            <!-- TV Section -->
+            <div class="collapsible-section">
+                <div class="collapsible-header" id="tvHeader" role="button" tabindex="0" aria-expanded="true" aria-controls="tvContent">
+                    <h2>TV Streams</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="collapsible-content" id="tvContent">
+                    <!-- TV items will be injected here -->
+                </div>
+            </div>
+
+            <!-- Radio Section -->
+            <div class="collapsible-section">
+                <div class="collapsible-header" id="radioHeader" role="button" tabindex="0" aria-expanded="true" aria-controls="radioContent">
+                    <h2>Radio Streams</h2>
+                     <span class="toggle-icon">▼</span>
+                </div>
+                <div class="collapsible-content" id="radioContent">
+                    <!-- Radio items will be injected here -->
+                </div>
+            </div>
+
         </div>
-        <div class="column">
-            <div id="radioResultsContainer" class="results-container"></div>
-        </div>
-    </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
-        let tvResults = [];
-        let radioResults = [];
-        let currentTVListings = [];
-        let currentRadioListings = [];
+        let allTvResults = []; // Store ALL fetched TV results
+        let allRadioResults = []; // Store ALL fetched Radio results
         let debounceTimer;
+
+        // DOM Elements Cache
+        const playerContainer = document.getElementById('playerContainer');
+        const streamsContainer = document.getElementById('streamsContainer');
+        const tvHeader = document.getElementById('tvHeader');
+        const radioHeader = document.getElementById('radioHeader');
+        const tvContent = document.getElementById('tvContent');
+        const radioContent = document.getElementById('radioContent');
+        const searchBar = document.getElementById('searchBar');
+
 
         document.addEventListener('DOMContentLoaded', () => {
             loadTVAndRadio();
+            setupCollapsibles();
         });
 
+        function setupCollapsibles() {
+            tvHeader.addEventListener('click', () => toggleSection(tvHeader, tvContent));
+            radioHeader.addEventListener('click', () => toggleSection(radioHeader, radioContent));
+             tvHeader.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(tvHeader, tvContent); } });
+             radioHeader.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(radioHeader, radioContent); } });
+
+             // Start expanded
+             toggleSection(tvHeader, tvContent, true);
+             toggleSection(radioHeader, radioContent, true);
+        }
+
+        function toggleSection(header, content, forceExpand = null) {
+            const shouldBeExpanded = forceExpand === null ? !header.classList.contains('expanded') : forceExpand;
+
+            if (shouldBeExpanded) {
+                header.classList.add('expanded');
+                content.classList.add('expanded');
+                header.setAttribute('aria-expanded', 'true');
+                // header.querySelector('.toggle-icon').textContent = '▲'; // If using text icons
+            } else {
+                header.classList.remove('expanded');
+                content.classList.remove('expanded');
+                header.setAttribute('aria-expanded', 'false');
+                // header.querySelector('.toggle-icon').textContent = '▼'; // If using text icons
+            }
+        }
+
+
         async function loadTVAndRadio() {
+            streamsContainer.classList.remove('hidden');
+            tvContent.innerHTML = '<p style="grid-column: 1 / -1; color: var(--md-on-surface-secondary);">Loading TV...</p>';
+            radioContent.innerHTML = '<p style="grid-column: 1 / -1; color: var(--md-on-surface-secondary);">Loading Radio...</p>';
+
             const tvPromise = fetch('https://i.mjh.nz/nz/raw-tv.m3u8')
                 .then(res => res.text())
                 .then(tvData => {
                     const tvLines = tvData.split('\n');
                     let currentItem = {};
-                    tvResults = [];
-                    tvResults.push({
+                    allTvResults = []; // Reset before parsing
+                    // Add TV Guide first
+                    allTvResults.push({
                         name: 'TV Guide',
                         logo: 'https://upload.wikimedia.org/wikipedia/en/2/20/Freeview_2023.svg',
                         url: 'https://freeviewnz.tv/tvguide/whats-on/?st=streaming',
                         isTVGuide: true
                     });
-                    tvLines.forEach(line => {
+                                        tvLines.forEach(line => {
+                        line = line.trim();
                         if (line.startsWith('#EXTINF')) {
-                            const channelInfo = line.match(/tvg-logo="([^"]+)"/);
+                            const nameMatch = line.match(/,(.+)$/);
+                            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+                            const channelIdMatch = line.match(/channel-id="([^"]+)"/); // Extract channel-id
+
                             currentItem = {
-                                name: line.split(',')[1],
-                                logo: channelInfo ? channelInfo[1] : '',
-                                isDiscovery: line.includes('mjh-discovery'),
-                                isTrackside: line.toLowerCase().includes('tab trackside')
+                                name: nameMatch ? nameMatch[1] : 'Unknown TV',
+                                logo: logoMatch ? logoMatch[1] : 'https://via.placeholder.com/80/eee/aaa?text=No+Logo',
+                                channelId: channelIdMatch ? channelIdMatch[1] : null // Store the channelId (or null if not found)
                             };
                         } else if (line.startsWith('http')) {
-                            currentItem.url = line;
-                            tvResults.push(currentItem);
+                            // Check if we have at least a name OR a channelId before adding URL
+                            if (currentItem.name || currentItem.channelId) {
+                                currentItem.url = line;
+                                allTvResults.push(currentItem);
+                                currentItem = {}; // Reset for next item
+                            } else {
+                                // Optional: Log lines that look like URLs but didn't follow a valid #EXTINF
+                                // console.warn("Orphaned URL found:", line);
+                                currentItem = {}; // Reset even if invalid
+                            }
                         }
                     });
-                    // Sort TV
-                    tvResults.sort((a, b) => {
-                        if (a.isDiscovery && b.isDiscovery) {
-                            return 0;
-                        }
-                        if (a.isDiscovery) {
-                            return 1;
-                        }
-                        if (b.isDiscovery) {
-                            return -1;
-                        }
-                        return 0;
-                    });
-                    currentTVListings = [...tvResults];
-                });
+                }).catch(error => {
+                     console.error("Failed to load TV list:", error);
+                     tvContent.innerHTML = '<p style="color:red; grid-column: 1 / -1;">Failed to load TV streams.</p>';
+                 });
+
 
             const radioPromise = fetch('https://i.mjh.nz/nz/raw-radio.m3u8')
                 .then(res => res.text())
                 .then(radioData => {
                     const radioLines = radioData.split('\n');
                     let currentItem = {};
-                    radioResults = [];
+                    allRadioResults = []; // Reset before parsing
                     radioLines.forEach(line => {
+                         line = line.trim();
                         if (line.startsWith('#EXTINF')) {
-                            const channelInfo = line.match(/tvg-logo="([^"]+)"/);
-                            currentItem = {
-                                name: line.split(',')[1].replace(/\//g, ' / '),
-                                logo: channelInfo ? channelInfo[1] : ''
+                            const nameMatch = line.match(/,(.+)$/);
+                            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+                             currentItem = {
+                                name: nameMatch ? nameMatch[1].replace(/\//g, ' / ') : 'Unknown Radio',
+                                logo: logoMatch ? logoMatch[1] : 'https://via.placeholder.com/80/eee/aaa?text=No+Logo',
                             };
                         } else if (line.startsWith('http')) {
-                            currentItem.url = line;
-                            radioResults.push(currentItem);
+                             if (currentItem.name) {
+                                currentItem.url = line;
+                                allRadioResults.push(currentItem);
+                                currentItem = {};
+                            }
                         }
                     });
-                    // Sort Radio
-                    radioResults.sort((a, b) => {
-                        const isPriorityA = a.name.toLowerCase().includes('auckland') || a.name.toLowerCase().includes('more fm network') || a.name.toLowerCase().includes('chinese radio') || a.name.toLowerCase().includes('chinese voice');
-                        const isPriorityB = b.name.toLowerCase().includes('auckland') || b.name.toLowerCase().includes('more fm network') || b.name.toLowerCase().includes('chinese radio') || b.name.toLowerCase().includes('chinese voice');
+                }).catch(error => {
+                     console.error("Failed to load Radio list:", error);
+                     radioContent.innerHTML = '<p style="color:red; grid-column: 1 / -1;">Failed to load Radio streams.</p>';
+                 });
 
-                        if (isPriorityA && isPriorityB) {
-                            return b.name.localeCompare(a.name);
-                        }
 
-                        if (!isPriorityA && !isPriorityB) {
-                            return a.name.localeCompare(b.name);
-                        }
-
-                        return isPriorityA ? -1 : 1;
-                    });
-                    currentRadioListings = [...radioResults];
-                });
-
-            await Promise.all([tvPromise, radioPromise]);
-            displayListings();
+            await Promise.allSettled([tvPromise, radioPromise]);
+            filterListings(); // Display initial list (unfiltered) with subsections
         }
 
-        function displayListings(tvArray = currentTVListings, radioArray = currentRadioListings) {
-            const tvContainer = document.getElementById('tvResultsContainer');
-            const radioContainer = document.getElementById('radioResultsContainer');
-
-            tvContainer.innerHTML = '';
-            radioContainer.innerHTML = '';
-
-            tvArray.forEach(result => {
-                const item = document.createElement('div');
-                item.classList.add('result-item');
-                item.innerHTML = `
-                    <img src="${result.logo}" alt="${result.name}">
-                    <h3>${result.name}</h3>
-                `;
-                item.onclick = () => {
-                    if (result.isTVGuide) {
-                        window.open(result.url, '_blank');
-                    } else {
-                        showPlayer('video', result.url);
-                    }
-                };
-                tvContainer.appendChild(item);
-            });
-
-            radioArray.forEach(result => {
-                const item = document.createElement('div');
-                item.classList.add('result-item');
-                item.innerHTML = `
-                    <img src="${result.logo}" alt="${result.name}">
-                    <h3>${result.name}</h3>
-                `;
-                item.onclick = () => {
-                    if (result.url === 'random') {
-                        playRandomStation();
-                    } else {
-                        showPlayer('audio', result.url, result.logo, result.name);
-                    }
-                };
-                radioContainer.appendChild(item);
-            });
-
-            document.getElementById('mainContainer').classList.remove('hidden');
-            document.getElementById('playerContainer').classList.add('hidden');
-        }
-
-        // Show the player for TV or Radio streams
-        function showPlayer(type, streamUrl, logoUrl = '', name = '') {
-            const playerContainer = document.getElementById('playerContainer');
-            const mainContainer = document.getElementById('mainContainer');
-            playerContainer.innerHTML = '';
-
-            if (type === 'video') {
-                const videoPlayer = document.createElement('video');
-                videoPlayer.controls = true;
-                if (Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(streamUrl);
-                    hls.attachMedia(videoPlayer);
-                    hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                        videoPlayer.play();
-                    });
-                } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-                    videoPlayer.src = streamUrl;
-                    videoPlayer.play();
-                }
-                playerContainer.appendChild(videoPlayer);
-            } else if (type === 'audio') {
-                const logoImg = document.createElement('img');
-                logoImg.src = logoUrl;
-                logoImg.alt = name;
-                logoImg.classList.add('player-logo');
-
-                const channelName = document.createElement('h3');
-                channelName.textContent = name;
-                channelName.classList.add('player-info');
-
-                const audioPlayer = document.createElement('audio');
-                audioPlayer.controls = true;
-
-                if (streamUrl.endsWith('.m3u8')) {
-                    if (Hls.isSupported()) {
-                        const hls = new Hls();
-                        hls.loadSource(streamUrl);
-                        hls.attachMedia(audioPlayer);
-                        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                            audioPlayer.play();
-                        });
-                    } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-                        audioPlayer.src = streamUrl;
-                        audioPlayer.play();
-                    }
+        // Helper function to split TV results
+        function splitTvResults(tvArray) {
+            const discoveryTv = [];
+            const regularTv = [];
+            tvArray.forEach(item => {
+                // Keep TV Guide in regular section
+                 if (item.isTVGuide || !item.channelId || !item.channelId.startsWith('mjh-discovery-')) {
+                    regularTv.push(item);
                 } else {
-                    audioPlayer.src = streamUrl;
-                    audioPlayer.play();
+                    discoveryTv.push(item);
                 }
+            });
+            return { regularTv, discoveryTv };
+        }
 
-                playerContainer.appendChild(logoImg);
-                playerContainer.appendChild(channelName);
-                playerContainer.appendChild(audioPlayer);
+        // Helper function to split Radio results
+        function splitRadioResults(radioArray) {
+            const aucklandRadio = [];
+            const otherRadio = [];
+            radioArray.forEach(item => {
+                if (item.name.toLowerCase().includes('auckland')) {
+                    aucklandRadio.push(item);
+                } else {
+                    otherRadio.push(item);
+                }
+            });
+            return { aucklandRadio, otherRadio };
+        }
+
+        function displayListings(tvArray = allTvResults, radioArray = allRadioResults) {
+            tvContent.innerHTML = ''; // Clear TV content area
+            radioContent.innerHTML = ''; // Clear Radio content area
+
+            const { regularTv, discoveryTv } = splitTvResults(tvArray);
+            const { aucklandRadio, otherRadio } = splitRadioResults(radioArray);
+
+            const createItemElement = (result) => {
+                // (Keep the existing createItemElement function as it was)
+                if (!result.name || !result.logo) return null;
+                const item = document.createElement('div');
+                item.classList.add('result-item');
+                item.setAttribute('role', 'button');
+                item.setAttribute('tabindex', '0');
+                item.setAttribute('aria-label', `Play ${result.name}`); // Accessibility
+                item.innerHTML = `
+                    <img src="${result.logo}" alt="" aria-hidden="true" loading="lazy" onerror="this.src='https://via.placeholder.com/80/eee/aaa?text=Error'; this.onerror=null;">
+                    <h3>${result.name}</h3>
+                `;
+                 if (result.isTVGuide) {
+                    item.setAttribute('aria-label', `Open ${result.name}`);
+                    item.onclick = () => { window.open(result.url, '_blank'); };
+                    item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onclick(); } };
+                 } else if (result.url) {
+                    // Determine type based on which *original* array it came from
+                    const type = allTvResults.includes(result) ? 'video' : 'audio';
+                    item.onclick = () => { showPlayer(type, result.url, result.logo, result.name); };
+                    item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onclick(); } };
+                 } else {
+                    item.style.cursor = 'default';
+                     item.removeAttribute('tabindex');
+                     item.setAttribute('aria-disabled', 'true');
+                 }
+                return item;
+            };
+
+             const createSubsectionTitle = (titleText) => {
+                 const title = document.createElement('h4');
+                 title.classList.add('subsection-title');
+                 title.textContent = titleText;
+                 return title;
+             };
+
+
+            // Populate TV Section
+            let tvHasContent = false;
+            if (regularTv.length > 0) {
+                 // Optional: Add a title for regular TV if needed, or just list them
+                 regularTv.forEach(result => {
+                     const itemElement = createItemElement(result);
+                     if(itemElement) tvContent.appendChild(itemElement);
+                 });
+                 tvHasContent = true;
+            }
+            if (discoveryTv.length > 0) {
+                tvContent.appendChild(createSubsectionTitle('Discovery Channels'));
+                discoveryTv.forEach(result => {
+                     const itemElement = createItemElement(result);
+                     if(itemElement) tvContent.appendChild(itemElement);
+                 });
+                 tvHasContent = true;
+            }
+            if (!tvHasContent && allTvResults.length > 0 && searchBar.value.trim() !== '') { // Show no results only if searching and lists originally had items
+                tvContent.innerHTML = '<p style="grid-column: 1 / -1; color: var(--md-on-surface-secondary);">No TV streams match your search.</p>';
+            } else if (!tvHasContent && !tvContent.textContent.includes('Failed')) {
+                // Initial load or failure handled elsewhere
             }
 
-            mainContainer.classList.add('hidden');
+
+             // Populate Radio Section
+            let radioHasContent = false;
+             if (aucklandRadio.length > 0) {
+                radioContent.appendChild(createSubsectionTitle('Auckland'));
+                 aucklandRadio.forEach(result => {
+                     const itemElement = createItemElement(result);
+                     if(itemElement) radioContent.appendChild(itemElement);
+                 });
+                 radioHasContent = true;
+             }
+             if (otherRadio.length > 0) {
+                 // Optional: Add title for "Other Radio" if Auckland section exists
+                 if (aucklandRadio.length > 0) {
+                     radioContent.appendChild(createSubsectionTitle('New Zealand'));
+                 }
+                 otherRadio.forEach(result => {
+                      const itemElement = createItemElement(result);
+                     if(itemElement) radioContent.appendChild(itemElement);
+                 });
+                 radioHasContent = true;
+             }
+             if (!radioHasContent && allRadioResults.length > 0 && searchBar.value.trim() !== '') { // Show no results only if searching
+                 radioContent.innerHTML = '<p style="grid-column: 1 / -1; color: var(--md-on-surface-secondary);">No Radio streams match your search.</p>';
+             } else if (!radioHasContent && !radioContent.textContent.includes('Failed')) {
+                 // Initial load or failure handled elsewhere
+             }
+
+
+            streamsContainer.classList.remove('hidden');
+            playerContainer.classList.add('hidden');
+
+            // Auto expand/collapse based on content *after filtering*
+             toggleSection(tvHeader, tvContent, tvHasContent);
+             toggleSection(radioHeader, radioContent, radioHasContent);
+        }
+
+
+        function showPlayer(type, streamUrl, logoUrl = '', name = '') {
+            playerContainer.innerHTML = ''; // Clear previous player content
+
+            if (window.currentHlsPlayer) {
+                window.currentHlsPlayer.destroy();
+                window.currentHlsPlayer = null;
+            }
+            const existingMedia = playerContainer.querySelector('video, audio');
+            if (existingMedia) { existingMedia.pause(); existingMedia.src = ''; existingMedia.load(); }
+
+            let mediaElement;
+
+            if (type === 'video') {
+                mediaElement = document.createElement('video');
+                mediaElement.controls = true;
+                mediaElement.autoplay = true;
+                mediaElement.setAttribute('playsinline', '');
+                playerContainer.appendChild(mediaElement);
+            } else if (type === 'audio') {
+                 if (logoUrl) {
+                    const logoImg = document.createElement('img');
+                    logoImg.src = logoUrl; logoImg.alt = name; logoImg.classList.add('player-logo');
+                    logoImg.onerror = () => { logoImg.style.display = 'none'; };
+                    playerContainer.appendChild(logoImg);
+                 }
+                 if (name) {
+                    const channelName = document.createElement('h3');
+                    channelName.textContent = name; channelName.classList.add('player-info');
+                    playerContainer.appendChild(channelName);
+                 }
+                mediaElement = document.createElement('audio');
+                mediaElement.controls = true;
+                mediaElement.autoplay = true;
+                playerContainer.appendChild(mediaElement);
+            } else { console.error("Invalid player type:", type); return; }
+
+            // --- HLS / Native Playback Logic (Keep as is) ---
+            if (streamUrl.includes('.m3u8') && Hls.isSupported()) {
+                const hls = new Hls({});
+                window.currentHlsPlayer = hls;
+                hls.loadSource(streamUrl);
+                hls.attachMedia(mediaElement);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    mediaElement.play().catch(e => console.warn("Autoplay prevented:", e));
+                });
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.error('HLS Error:', data);
+                    if (data.fatal) {
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.warn("HLS Network error - trying to recover", data.details);
+                                playerContainer.innerHTML += '<p style="color:orange;">Stream interrupted. Trying to reconnect...</p>';
+                                setTimeout(() => hls.startLoad(), 3000);
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.warn("HLS Media error - trying to recover", data.details);
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                console.error("Unrecoverable HLS error", data);
+                                hls.destroy();
+                                playerContainer.innerHTML += '<p style="color:red;">Error loading stream. Cannot recover.</p>';
+                                break;
+                        }
+                    }
+                });
+            } else if (mediaElement.canPlayType('application/vnd.apple.mpegurl') || streamUrl.includes('.m3u8')) {
+                 mediaElement.src = streamUrl;
+                 mediaElement.addEventListener('loadedmetadata', () => { mediaElement.play().catch(e => console.warn("Autoplay prevented:", e)); });
+                 mediaElement.addEventListener('error', (e) => { console.error('Native HLS/Playback Error:', e); playerContainer.innerHTML += '<p style="color:red;">Error loading stream.</p>'; });
+            } else {
+                 mediaElement.src = streamUrl;
+                 mediaElement.addEventListener('loadedmetadata', () => { mediaElement.play().catch(e => console.warn("Autoplay prevented:", e)); });
+                 mediaElement.addEventListener('error', (e) => { console.error('Direct Playback Error:', e); playerContainer.innerHTML += '<p style="color:red;">Error loading stream.</p>'; });
+            }
+
+            streamsContainer.classList.add('hidden');
             playerContainer.classList.remove('hidden');
+            setTimeout(() => { playerContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
 
-        // Play a random radio station
-        function playRandomStation() {
-            const randomStation = radioResults[Math.floor(Math.random() * radioResults.length)];
-            showPlayer('audio', randomStation.url, randomStation.logo, randomStation.name);
-        }
-
-        // Debounce for search functionality
         function debounceFilter() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(filterListings, 300);
         }
 
-        // Filter listings based on search query
         function filterListings() {
-            const query = document.getElementById('searchBar').value.toLowerCase();
+            const query = searchBar.value.toLowerCase().trim();
 
-            const filteredTV = currentTVListings.filter(result => result.name.toLowerCase().includes(query));
-            const filteredRadio = currentRadioListings.filter(result => result.name.toLowerCase().includes(query));
+            // Hide player if active and search term changes
+            if (!playerContainer.classList.contains('hidden')) {
+                 playerContainer.classList.add('hidden');
+                 streamsContainer.classList.remove('hidden');
+                 const media = playerContainer.querySelector('video, audio');
+                 if (media) { media.pause(); media.src = ''; media.load(); }
+                 if (window.currentHlsPlayer) {
+                    window.currentHlsPlayer.destroy();
+                    window.currentHlsPlayer = null;
+                 }
+                 playerContainer.innerHTML = '';
+            }
 
+            // Filter the *original full* lists
+            const filteredTV = allTvResults.filter(result => result.name.toLowerCase().includes(query));
+            const filteredRadio = allRadioResults.filter(result => result.name.toLowerCase().includes(query));
+
+            // Display the filtered (and subsectioned) results
             displayListings(filteredTV, filteredRadio);
         }
     </script>
