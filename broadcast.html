@@ -40,24 +40,59 @@
             text-align: center; display: flex; flex-direction: column; min-height: 100vh;
         }
 
-        /* === Header === */
+        /* === Header (Matched to Media Page Style) === */
         .app-header {
-            background-color: var(--md-surface-color); padding: var(--spacing-unit) calc(var(--spacing-unit) * 2);
-            box-shadow: var(--md-elevation-2); position: sticky; top: 0; z-index: 100;
-            display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+            background-color: var(--md-surface-color);
+            padding: var(--spacing-unit) calc(var(--spacing-unit) * 2); /* Consistent padding */
+            box-shadow: var(--md-elevation-2);
+            position: sticky; /* Keep sticky */
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
         }
-        .title-container { display: flex; align-items: center; gap: calc(var(--spacing-unit) * 2); text-align: left; }
-        .title-image { width: 60px; height: 60px; object-fit: contain; }
-        .title-text h1, .title-text h2, .title-text h3 { margin: 0; line-height: 1.2; }
-        .title-text h1 { font-size: 1.5rem; font-weight: 500; }
-        .title-text h2 { font-size: 1rem; font-weight: 400; color: var(--md-on-surface-secondary); }
-        .title-text h2 a { color: var(--md-primary-color); text-decoration: none; }
-        .title-text h2 a:hover { text-decoration: underline; }
-        .title-text h3 { font-size: 0.875rem; font-weight: 400; color: var(--md-on-surface-secondary); }
+        .title-container {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--spacing-unit) * 2); /* Consistent gap */
+            text-align: left;
+        }
+        .title-image {
+            width: 60px; /* Consistent size */
+            height: 60px;
+            object-fit: contain;
+        }
+        .title-text h1, .title-text h2, .title-text h3 {
+            margin: 0;
+            line-height: 1.2;
+        }
+        .title-text h1 {
+            font-size: 1.5rem; /* Consistent size */
+            font-weight: 500;
+        }
+        .title-text h2 {
+            font-size: 1rem; /* Consistent size */
+            font-weight: 400;
+            color: var(--md-on-surface-secondary);
+        }
+        .title-text h2 a {
+            color: var(--md-primary-color);
+            text-decoration: none;
+        }
+        .title-text h2 a:hover {
+            text-decoration: underline;
+        }
+        .title-text h3 {
+            font-size: 0.875rem; /* Consistent size */
+            font-weight: 400;
+            color: var(--md-on-surface-secondary);
+        }
 
         /* === Main Content Area === */
         main {
-            padding: calc(var(--spacing-unit) * 2);
+            padding: calc(var(--spacing-unit) * 2); /* Retain padding, including top padding */
              display: flex;
              flex-direction: column;
              align-items: center;
@@ -66,25 +101,40 @@
              overflow: hidden; /* Prevent content overflow issues */
         }
 
-        /* === Search Section === */
+        /* === Search Section (Matched to Media Page Style) === */
         .search-container {
-             width: 100%; max-width: 800px; margin-bottom: calc(var(--spacing-unit) * 3);
+             width: 100%;
+             max-width: 800px; /* Consistent max width */
+             margin: 0 auto calc(var(--spacing-unit) * 2) auto; /* Consistent margin & centering */
              flex-shrink: 0;
         }
         input[type="text"] {
-            display: block; width: 90%; max-width: 400px; margin: 0 auto;
-            padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
-            font-size: 1rem; color: var(--md-on-surface-primary);
-            background-color: var(--md-surface-color); border: none;
+            display: block;
+            width: 90%;
+            max-width: 400px; /* Consistent max width */
+            margin: 0 auto; /* Center within container */
+            padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2); /* Consistent padding */
+            font-size: 1rem; /* Consistent font size */
+            color: var(--md-on-surface-primary);
+            background-color: var(--md-surface-color);
+            border: none;
             border-bottom: 1px solid rgba(0, 0, 0, 0.12);
             border-radius: var(--md-border-radius) var(--md-border-radius) 0 0;
             box-shadow: var(--md-elevation-1);
             transition: border-bottom 0.3s ease, box-shadow 0.3s ease;
         }
-        input[type="text"]:focus { outline: none; border-bottom: 2px solid var(--md-primary-color); box-shadow: var(--md-elevation-2); }
-        input[type="text"]::placeholder { color: var(--md-on-surface-secondary); opacity: 1; text-align: left; }
+        input[type="text"]:focus {
+            outline: none;
+            border-bottom: 2px solid var(--md-primary-color);
+            box-shadow: var(--md-elevation-2);
+        }
+        input[type="text"]::placeholder {
+            color: var(--md-on-surface-secondary);
+            opacity: 1;
+            text-align: left;
+        }
 
-        /* === Container for Collapsible Sections === */
+        /* === Container for Collapsible Sections (Stream Page Specific - Unchanged) === */
         #streamsContainer {
             width: 100%;
             max-width: 1200px; /* Max width for the stream lists */
@@ -93,28 +143,26 @@
             padding: var(--spacing-unit);
         }
 
-        /* === Styling for each Collapsible Section === */
+        /* === Styling for each Collapsible Section (Stream Page Specific - Unchanged) === */
         .collapsible-section {
-            /* Removed background-color and box-shadow from here */
             border-radius: var(--md-border-radius);
             margin-bottom: calc(var(--spacing-unit) * 2);
             overflow: hidden; /* Keep this */
         }
 
-        /* === Header/Toggle Bar === */
+        /* === Header/Toggle Bar (Stream Page Specific - Unchanged) === */
         .collapsible-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
             cursor: pointer;
-            /* Header keeps its styling */
             background-color: var(--md-surface-color);
             border-radius: var(--md-border-radius); /* Rounded corners for header */
             box-shadow: var(--md-elevation-1); /* Shadow for header */
             border-bottom: 1px solid rgba(0,0,0,0.08); /* Separation line */
             transition: background-color 0.2s ease, box-shadow 0.2s ease;
-            margin-bottom: 0; /* Remove margin if content doesn't have background */
+            margin-bottom: 0;
         }
         .collapsible-header:hover {
             background-color: #f8f8f8; /* Slightly darker on hover */
@@ -134,33 +182,26 @@
         .collapsible-header.expanded .toggle-icon {
             transform: rotate(180deg);
         }
-        /* Adjust header border-radius when content is shown */
         .collapsible-header.expanded {
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
-            border-bottom: 1px solid rgba(0,0,0,0.12); /* Slightly stronger border when expanded */
+            border-bottom: 1px solid rgba(0,0,0,0.12);
         }
 
-
-        /* === Content Area (Grid) === */
+        /* === Content Area (Grid) (Stream Page Specific - Unchanged) === */
         .collapsible-content {
             display: grid;
-            /* Default Grid: Auto-fill for larger screens */
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: calc(var(--spacing-unit) * 1.5);
             padding: calc(var(--spacing-unit) * 2);
              /* Start hidden */
             display: none;
-            /* REMOVED: background-color: var(--md-surface-color); */
-             /* Optional: Add a subtle top padding if header border isn't enough */
-             /* padding-top: calc(var(--spacing-unit) * 1); */
         }
-        /* Show content when expanded */
          .collapsible-content.expanded {
              display: grid;
          }
 
-        /* === Subsection Heading === */
+        /* === Subsection Heading (Stream Page Specific - Unchanged) === */
         .subsection-title {
             grid-column: 1 / -1; /* Span full width */
             text-align: left;
@@ -172,41 +213,39 @@
             padding-bottom: calc(var(--spacing-unit) * 0.5);
             border-bottom: 1px solid rgba(0,0,0,0.12);
         }
-        /* Remove top margin for the very first subsection title */
         .collapsible-content > .subsection-title:first-child {
              margin-top: 0;
         }
 
-
-        /* === Material Card Styling for Stream Items === */
+        /* === Material Card Styling for Stream Items (Stream Page Specific - Unchanged) === */
         .result-item {
-            background-color: var(--md-surface-color); /* Use surface color */
+            background-color: var(--md-surface-color);
             border-radius: var(--md-border-radius);
-            box-shadow: var(--md-elevation-1); /* Apply base elevation */
+            box-shadow: var(--md-elevation-1);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            overflow: hidden; /* Clip content/image */
-            transition: box-shadow 0.3s ease, transform 0.2s ease; /* Animate shadow and transform */
+            overflow: hidden;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
             position: relative;
-            padding: var(--spacing-unit); /* Internal padding */
+            padding: var(--spacing-unit);
         }
         .result-item:hover {
-            box-shadow: var(--md-elevation-4); /* Increase shadow on hover */
-            transform: translateY(-3px); /* Lift effect */
+            box-shadow: var(--md-elevation-4);
+            transform: translateY(-3px);
         }
         .result-item:focus-visible {
             outline: 2px solid var(--md-primary-color);
             outline-offset: 2px;
-            box-shadow: var(--md-elevation-4); /* Match hover shadow */
-            transform: translateY(-3px); /* Match hover lift */
+            box-shadow: var(--md-elevation-4);
+            transform: translateY(-3px);
         }
         .result-item img {
             width: 80px; height: 80px; object-fit: contain;
             border-radius: var(--md-border-radius); margin-bottom: var(--spacing-unit);
-            background-color: #e0e0e0; /* Slightly darker placeholder bg */
+            background-color: #e0e0e0;
         }
         .result-item h3 {
             font-size: 0.875rem; font-weight: 500; margin: 0;
@@ -215,7 +254,7 @@
             padding: 0 calc(var(--spacing-unit) * 0.5); margin-bottom: calc(var(--spacing-unit) * 0.5);
         }
 
-        /* === Player Section Styling === */
+        /* === Player Section Styling (Stream Page Specific - Unchanged) === */
         #playerContainer.player-container {
             padding: calc(var(--spacing-unit) * 2); width: 100%; max-width: 800px;
             margin: 0 auto; text-align: center; flex-grow: 1;
@@ -228,8 +267,9 @@
 
         .hidden { display: none !important; }
 
-        /* === Media Query for Mobile Two-Column Layout === */
+        /* === Media Query for Mobile Two-Column Layout (Stream Page Specific - Unchanged for CONTENT) === */
         @media (max-width: 600px) {
+          /* Keep grid layout adjustments for stream items */
           .collapsible-content {
             grid-template-columns: repeat(2, 1fr);
             gap: var(--spacing-unit);
@@ -238,24 +278,27 @@
           .result-item { padding: calc(var(--spacing-unit) * 0.75); }
           .result-item img { width: 60px; height: 60px; margin-bottom: calc(var(--spacing-unit) * 0.5); }
           .result-item h3 { font-size: 0.8rem; }
-          .app-header { padding: calc(var(--spacing-unit)*0.5) var(--spacing-unit); }
-          .title-image { width: 45px; height: 45px;}
-          .title-text h1 {font-size: 1.2rem;}
-          .title-text h2 {font-size: 0.85rem;}
-          .title-text h3 {font-size: 0.75rem;}
-          .title-container { gap: var(--spacing-unit); }
           .subsection-title { font-size: 0.9rem; }
+
+          /* REMOVED Header/Title overrides */
+          /* .app-header { padding: calc(var(--spacing-unit)*0.5) var(--spacing-unit); } */
+          /* .title-image { width: 45px; height: 45px;} */
+          /* .title-text h1 {font-size: 1.2rem;} */
+          /* .title-text h2 {font-size: 0.85rem;} */
+          /* .title-text h3 {font-size: 0.75rem;} */
+          /* .title-container { gap: var(--spacing-unit); } */
         }
     </style>
 </head>
 
 <body>
+    <!-- HTML Body remains the same as provided in the first block -->
     <header class="app-header">
         <div class="title-container">
             <img src="https://em-content.zobj.net/source/google/387/soft-ice-cream_1f366.png" alt="Ice Cream Icon" class="title-image">
             <div class="title-text">
                 <h1>Bing Chilling</h1>
-                <h2>Stream | <a href="index.html">media</a></h2>
+                <h2>Stream | <a href="index.html">media</a></h2> <!-- Assuming index.html is the media page -->
                 <h3>By Kerrawesome</h3>
             </div>
         </div>
@@ -300,6 +343,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
+        // JavaScript remains the same as provided in the first block
         let allTvResults = []; // Store ALL fetched TV results
         let allRadioResults = []; // Store ALL fetched Radio results
         let debounceTimer;
